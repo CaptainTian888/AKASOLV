@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AKASOLV — The Art of Absolute Solution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #0c1018;
@@ -13,6 +16,7 @@
       --text: #e8e7e3;
       --muted: #aeb3bd;
       --gold: #8f7c59;
+      --gold-light: #b8a67a;
       --violet: #706584;
       --line: rgba(255,255,255,0.12);
       --shadow: 0 30px 80px rgba(0,0,0,0.35);
@@ -20,13 +24,15 @@
       --max: 1320px;
       --nav-h: 76px;
       --ease: cubic-bezier(.22,.61,.36,1);
+      --font-display: 'Cormorant Garamond', 'PingFang SC', 'Microsoft YaHei', serif;
+      --font-body: 'DM Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
     }
 
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      font-family: Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-family: var(--font-body);
       color: var(--text);
       background:
         radial-gradient(circle at 15% 20%, rgba(143,124,89,.14), transparent 24%),
@@ -91,13 +97,7 @@
       overflow: hidden;
     }
 
-    .ring,
-    .shape {
-      position: absolute;
-      border-radius: 50%;
-      opacity: .55;
-      will-change: transform;
-    }
+    .ring, .shape { position: absolute; border-radius: 50%; opacity: .55; will-change: transform; }
 
     .ring {
       border: 1px solid rgba(255,255,255,.08);
@@ -121,28 +121,28 @@
     .shape.s3 { width: 110px; height: 110px; top: 18%; right: 15%; border-radius: 58% 42% 33% 67% / 45% 49% 51% 55%; animation-duration: 11s; }
     .shape.s4 { width: 62px; height: 62px; top: 74%; right: 26%; animation-duration: 13s; }
 
-    @keyframes spin {
-      from { transform: rotate(0deg) translateZ(0); }
-      to { transform: rotate(360deg) translateZ(0); }
-    }
-
-    @keyframes float {
-      from { transform: translate3d(0,0,0) rotate(0deg); }
-      to { transform: translate3d(0,-18px,0) rotate(8deg); }
-    }
+    @keyframes spin { from { transform: rotate(0deg) translateZ(0); } to { transform: rotate(360deg) translateZ(0); } }
+    @keyframes float { from { transform: translate3d(0,0,0) rotate(0deg); } to { transform: translate3d(0,-18px,0) rotate(8deg); } }
 
     a { color: inherit; text-decoration: none; }
 
+    /* ─── HEADER ─── */
     .site-header {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       height: var(--nav-h);
-      z-index: 30;
+      z-index: 100;
       backdrop-filter: blur(18px);
       background: linear-gradient(to bottom, rgba(10,13,19,.78), rgba(10,13,19,.45));
       border-bottom: 1px solid rgba(255,255,255,.06);
+      transition: background .4s var(--ease), box-shadow .4s var(--ease);
+    }
+
+    .site-header.scrolled {
+      background: linear-gradient(to bottom, rgba(10,13,19,.92), rgba(10,13,19,.82));
+      box-shadow: 0 4px 40px rgba(0,0,0,.3);
     }
 
     .nav {
@@ -163,6 +163,7 @@
       letter-spacing: .2em;
       text-transform: uppercase;
       font-size: 14px;
+      font-weight: 600;
     }
 
     .logo-glyph {
@@ -174,10 +175,10 @@
       border: 1px solid rgba(255,255,255,.16);
       box-shadow: 0 0 30px rgba(143,124,89,.15);
       overflow: hidden;
+      flex-shrink: 0;
     }
 
-    .logo-glyph::before,
-    .logo-glyph::after {
+    .logo-glyph::before, .logo-glyph::after {
       content: "";
       position: absolute;
       inset: 7px;
@@ -192,41 +193,196 @@
       border-color: rgba(143,124,89,.28);
     }
 
-    .nav-links {
+    .nav-center {
       display: flex;
       align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 6px;
     }
 
-    .nav-link,
-    .lang-switch {
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.03);
-      color: var(--text);
+    .nav-link {
+      border: none;
+      background: none;
+      color: var(--muted);
       height: 42px;
-      padding: 0 18px;
+      padding: 0 16px;
       border-radius: 999px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       font-size: 14px;
+      font-family: var(--font-body);
       cursor: pointer;
-      transition: transform .35s var(--ease), background .35s var(--ease), border-color .35s var(--ease), color .35s var(--ease), box-shadow .35s var(--ease);
-    }
-
-    .nav-link:hover,
-    .lang-switch:hover {
-      transform: translateY(-1px) scale(1.02);
-      background: linear-gradient(135deg, rgba(143,124,89,.14), rgba(112,101,132,.14));
-      border-color: rgba(255,255,255,.18);
-      box-shadow: 0 12px 30px rgba(0,0,0,.2);
-    }
-
-    main {
+      transition: color .35s var(--ease), background .35s var(--ease);
       position: relative;
-      z-index: 2;
+      white-space: nowrap;
     }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%) scaleX(0);
+      width: 16px;
+      height: 1.5px;
+      background: linear-gradient(90deg, var(--gold), var(--violet));
+      border-radius: 2px;
+      transition: transform .35s var(--ease);
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+      background: rgba(255,255,255,.04);
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+      transform: translateX(-50%) scaleX(1);
+    }
+
+    .nav-link.active { color: var(--text); }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lang-switch {
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      color: var(--muted);
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all .35s var(--ease);
+      letter-spacing: .06em;
+    }
+
+    .lang-switch:hover {
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.14);
+      color: var(--text);
+    }
+
+    .nav-cta {
+      height: 40px;
+      padding: 0 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(143,124,89,.35);
+      background: linear-gradient(135deg, rgba(143,124,89,.12), rgba(112,101,132,.08));
+      color: var(--gold-light);
+      font-size: 13px;
+      font-family: var(--font-body);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      transition: all .4s var(--ease);
+      white-space: nowrap;
+    }
+
+    .nav-cta:hover {
+      background: linear-gradient(135deg, rgba(143,124,89,.22), rgba(112,101,132,.14));
+      border-color: rgba(143,124,89,.55);
+      box-shadow: 0 8px 30px rgba(143,124,89,.15);
+      transform: translateY(-1px);
+    }
+
+    .nav-cta .arrow { transition: transform .3s var(--ease); }
+    .nav-cta:hover .arrow { transform: translateX(3px); }
+
+    /* ─── MOBILE MENU ─── */
+    .menu-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      border-radius: 12px;
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .menu-toggle span {
+      position: absolute;
+      left: 10px;
+      height: 1.5px;
+      background: var(--text);
+      border-radius: 2px;
+      transition: all .35s var(--ease);
+    }
+
+    .menu-toggle span:nth-child(1) { top: 13px; width: 18px; }
+    .menu-toggle span:nth-child(2) { top: 19px; width: 14px; }
+    .menu-toggle span:nth-child(3) { top: 25px; width: 18px; }
+
+    .menu-toggle.open span:nth-child(1) { transform: rotate(45deg); top: 19px; width: 18px; }
+    .menu-toggle.open span:nth-child(2) { opacity: 0; transform: translateX(-6px); }
+    .menu-toggle.open span:nth-child(3) { transform: rotate(-45deg); top: 19px; width: 18px; }
+
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: var(--nav-h);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 99;
+      background: rgba(10,13,19,.96);
+      backdrop-filter: blur(30px);
+      padding: 40px 28px;
+      flex-direction: column;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity .4s var(--ease), transform .4s var(--ease);
+      overflow-y: auto;
+    }
+
+    .mobile-menu.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .mobile-menu .mobile-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      color: var(--text);
+      font-size: 18px;
+      letter-spacing: .04em;
+      transition: color .3s;
+    }
+
+    .mobile-menu .mobile-link:hover { color: var(--gold-light); }
+
+    .mobile-menu .mobile-link .link-num {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: .15em;
+    }
+
+    .mobile-menu .mobile-bottom {
+      margin-top: auto;
+      padding-top: 30px;
+      display: flex;
+      gap: 12px;
+    }
+
+    /* ─── MAIN ─── */
+    main { position: relative; z-index: 2; }
 
     section {
       max-width: var(--max);
@@ -235,6 +391,7 @@
       position: relative;
     }
 
+    /* ─── HERO ─── */
     .hero {
       min-height: 100vh;
       display: grid;
@@ -280,10 +437,7 @@
       pointer-events: none;
     }
 
-    @keyframes swirl {
-      from { transform: rotate(0deg) scale(1); }
-      to { transform: rotate(360deg) scale(1.06); }
-    }
+    @keyframes swirl { from { transform: rotate(0deg) scale(1); } to { transform: rotate(360deg) scale(1.06); } }
 
     .hero-grid {
       position: absolute;
@@ -332,10 +486,11 @@
 
     h1 {
       margin: 0;
-      font-size: clamp(56px, 9vw, 130px);
-      line-height: .94;
+      font-family: var(--font-display);
+      font-size: clamp(56px, 9vw, 140px);
+      line-height: .92;
       font-weight: 700;
-      letter-spacing: .08em;
+      letter-spacing: .06em;
       text-transform: uppercase;
       text-wrap: balance;
       text-shadow: 0 12px 40px rgba(0,0,0,.38);
@@ -344,10 +499,12 @@
     .tagline {
       margin: 24px auto 0;
       max-width: 740px;
-      font-size: clamp(18px, 2.4vw, 28px);
+      font-size: clamp(17px, 2.2vw, 24px);
       line-height: 1.5;
       color: #d7d6d1;
       letter-spacing: .05em;
+      font-family: var(--font-display);
+      font-style: italic;
     }
 
     .hero-subline {
@@ -356,6 +513,30 @@
       font-size: 15px;
       line-height: 1.9;
       color: var(--muted);
+    }
+
+    .hero-scroll {
+      margin-top: 40px;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      animation: scrollBounce 2.4s ease-in-out infinite;
+    }
+
+    .hero-scroll .scroll-line {
+      width: 1px;
+      height: 32px;
+      background: linear-gradient(to bottom, rgba(255,255,255,.3), transparent);
+    }
+
+    @keyframes scrollBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(6px); }
     }
 
     .floating-line {
@@ -378,6 +559,7 @@
       100% { transform: translate3d(0,0,0); opacity: .2; }
     }
 
+    /* ─── SECTION SHARED ─── */
     .section-head {
       display: grid;
       grid-template-columns: 1.15fr .85fr;
@@ -393,14 +575,16 @@
       text-transform: uppercase;
       color: var(--gold);
       margin-bottom: 16px;
+      font-weight: 500;
     }
 
     h2 {
       margin: 0;
-      font-size: clamp(34px, 4vw, 58px);
-      line-height: 1.05;
-      font-weight: 650;
-      letter-spacing: .02em;
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4vw, 54px);
+      line-height: 1.1;
+      font-weight: 600;
+      letter-spacing: .01em;
       text-wrap: balance;
     }
 
@@ -412,22 +596,22 @@
       justify-self: end;
     }
 
-    .story-layout,
-    .method-layout {
-      display: grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 26px;
-      align-items: stretch;
-      padding-bottom: 40px;
+    /* ─── DIVIDER ─── */
+    .section-divider {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 28px;
+      position: relative;
+      z-index: 2;
     }
 
-    .story-copy,
-    .story-visual,
-    .philosophy-card,
-    .principle-card,
-    .method-copy,
-    .method-grid-card,
-    .manifesto-band {
+    .section-divider .divider-line {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.08) 20%, rgba(143,124,89,.12) 50%, rgba(255,255,255,.08) 80%, transparent);
+    }
+
+    /* ─── CARD SHARED ─── */
+    .card-base {
       position: relative;
       overflow: hidden;
       border: 1px solid rgba(255,255,255,.08);
@@ -436,20 +620,7 @@
       box-shadow: var(--shadow);
     }
 
-    .story-copy,
-    .method-copy {
-      padding: 34px 34px 30px;
-      min-height: 460px;
-      backdrop-filter: blur(14px);
-    }
-
-    .story-copy::before,
-    .story-visual::before,
-    .philosophy-card::before,
-    .principle-card::before,
-    .method-copy::before,
-    .method-grid-card::before,
-    .manifesto-band::before {
+    .card-base::before {
       content: "";
       position: absolute;
       inset: auto auto -30% -15%;
@@ -460,8 +631,22 @@
       pointer-events: none;
     }
 
-    .story-copy p,
-    .method-copy p {
+    /* ─── STORY ─── */
+    .story-layout {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 26px;
+      align-items: stretch;
+      padding-bottom: 40px;
+    }
+
+    .story-copy {
+      padding: 34px 34px 30px;
+      min-height: 460px;
+      backdrop-filter: blur(14px);
+    }
+
+    .story-copy p {
       margin: 0 0 20px;
       color: #d0d5de;
       font-size: 16px;
@@ -469,12 +654,12 @@
       max-width: 92%;
     }
 
-    .story-copy p:last-child,
-    .method-copy p:last-child { margin-bottom: 0; }
+    .story-copy p:last-child { margin-bottom: 0; }
 
     .quote-mark {
-      font-size: 90px;
-      line-height: .7;
+      font-family: var(--font-display);
+      font-size: 100px;
+      line-height: .65;
       color: rgba(255,255,255,.09);
       margin-bottom: 18px;
       font-weight: 700;
@@ -489,18 +674,8 @@
       isolation: isolate;
     }
 
-    .composition {
-      position: absolute;
-      inset: 0;
-    }
-
-    .plate,
-    .arc,
-    .dot,
-    .beam,
-    .mesh-line {
-      position: absolute;
-    }
+    .composition { position: absolute; inset: 0; }
+    .plate, .arc, .dot, .beam { position: absolute; }
 
     .plate {
       border: 1px solid rgba(255,255,255,.08);
@@ -534,34 +709,26 @@
     .dot.d2 { top: 58%; right: 24%; background: linear-gradient(135deg, var(--violet), #b0a4c3); box-shadow: 0 0 18px rgba(112,101,132,.45); }
     .dot.d3 { bottom: 16%; left: 40%; }
 
-    .beam {
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
-      opacity: .7;
-    }
-
+    .beam { background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent); opacity: .7; }
     .beam.b1 { width: 220px; height: 1px; top: 48%; left: 8%; transform: rotate(16deg); }
     .beam.b2 { width: 1px; height: 130px; bottom: 18%; right: 18%; }
 
-    .philosophy-grid,
-    .principle-grid {
+    /* ─── PHILOSOPHY / PRINCIPLES GRID ─── */
+    .philosophy-grid, .principle-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 18px;
       padding-bottom: 24px;
     }
 
-    .philosophy-card,
-    .principle-card,
-    .method-grid-card {
+    .philosophy-card, .principle-card, .method-grid-card {
       min-height: 280px;
-      padding: 24px;
+      padding: 28px;
       backdrop-filter: blur(14px);
       transition: transform .45s var(--ease), border-color .45s var(--ease), background .45s var(--ease), box-shadow .45s var(--ease);
     }
 
-    .philosophy-card:hover,
-    .principle-card:hover,
-    .method-grid-card:hover {
+    .philosophy-card:hover, .principle-card:hover, .method-grid-card:hover {
       transform: translateY(-6px);
       border-color: rgba(255,255,255,.16);
       background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
@@ -577,31 +744,51 @@
       border: 1px solid rgba(255,255,255,.1);
       background: linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
       color: #dad7cf;
-      font-size: 15px;
+      font-size: 14px;
       letter-spacing: .2em;
+      font-weight: 500;
     }
 
-    .philosophy-card h3,
-    .principle-card h3,
-    .method-grid-card h3 {
+    .philosophy-card h3, .principle-card h3, .method-grid-card h3 {
       margin: 22px 0 12px;
-      font-size: 24px;
+      font-family: var(--font-display);
+      font-size: 26px;
       font-weight: 600;
-      letter-spacing: .03em;
+      letter-spacing: .02em;
     }
 
-    .philosophy-card p,
-    .principle-card p,
-    .method-grid-card p {
+    .philosophy-card p, .principle-card p, .method-grid-card p {
       margin: 0;
       color: var(--muted);
       line-height: 1.9;
       font-size: 14px;
     }
 
-    .principle-grid {
-      padding-bottom: 80px;
+    .principle-grid { padding-bottom: 80px; }
+
+    /* ─── METHOD ─── */
+    .method-layout {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 26px;
+      align-items: stretch;
+      padding-bottom: 40px;
     }
+
+    .method-copy {
+      padding: 34px 34px 30px;
+      backdrop-filter: blur(14px);
+    }
+
+    .method-copy p {
+      margin: 0 0 20px;
+      color: #d0d5de;
+      font-size: 16px;
+      line-height: 2;
+      max-width: 92%;
+    }
+
+    .method-copy p:last-child { margin-bottom: 0; }
 
     .method-grid {
       display: grid;
@@ -610,9 +797,7 @@
       align-content: start;
     }
 
-    .method-grid-card {
-      min-height: 220px;
-    }
+    .method-grid-card { min-height: 220px; }
 
     .metric {
       margin-top: 26px;
@@ -623,13 +808,12 @@
       border-top: 1px solid rgba(255,255,255,.08);
     }
 
-    .metric-item {
-      min-width: 120px;
-    }
+    .metric-item { min-width: 120px; }
 
     .metric-num {
       display: block;
-      font-size: 26px;
+      font-family: var(--font-display);
+      font-size: 28px;
       line-height: 1;
       color: #ddd6c8;
       letter-spacing: .04em;
@@ -643,6 +827,169 @@
       text-transform: uppercase;
     }
 
+    /* ─── SERVICES (NEW) ─── */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      padding-bottom: 40px;
+    }
+
+    .service-card {
+      padding: 32px 24px;
+      backdrop-filter: blur(14px);
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      transition: transform .45s var(--ease), border-color .45s var(--ease), background .45s var(--ease), box-shadow .45s var(--ease);
+    }
+
+    .service-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255,255,255,.16);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      box-shadow: 0 24px 60px rgba(0,0,0,.28);
+    }
+
+    .service-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: linear-gradient(145deg, rgba(143,124,89,.12), rgba(112,101,132,.08));
+      display: grid;
+      place-items: center;
+      margin-bottom: 22px;
+      position: relative;
+    }
+
+    .service-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--gold-light);
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .service-card h3 {
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .service-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.85;
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .service-tag {
+      margin-top: 20px;
+      font-size: 11px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: .7;
+    }
+
+    /* ─── STATS (NEW) ─── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      padding: 60px 0 80px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 36px 20px;
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.02);
+      transition: border-color .4s var(--ease);
+    }
+
+    .stat-item:hover { border-color: rgba(255,255,255,.12); }
+
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: clamp(38px, 4vw, 56px);
+      font-weight: 700;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--gold-light), var(--violet));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: .08em;
+    }
+
+    /* ─── PROCESS / WORKFLOW (NEW) ─── */
+    .process-timeline {
+      display: flex;
+      gap: 0;
+      padding-bottom: 80px;
+      position: relative;
+    }
+
+    .process-timeline::before {
+      content: '';
+      position: absolute;
+      top: 50px;
+      left: 40px;
+      right: 40px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.08) 10%, rgba(143,124,89,.12) 50%, rgba(255,255,255,.08) 90%, transparent);
+    }
+
+    .process-step {
+      flex: 1;
+      text-align: center;
+      padding: 0 16px;
+      position: relative;
+    }
+
+    .process-num {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 24px;
+      border-radius: 50%;
+      border: 1px solid rgba(143,124,89,.3);
+      background: linear-gradient(145deg, rgba(143,124,89,.12), rgba(112,101,132,.06));
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--gold-light);
+      position: relative;
+      z-index: 2;
+    }
+
+    .process-step h4 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 10px;
+    }
+
+    .process-step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    /* ─── MANIFESTO ─── */
     .manifesto-band {
       margin-top: 12px;
       margin-bottom: 110px;
@@ -661,6 +1008,7 @@
     }
 
     .manifesto-title {
+      font-family: var(--font-display);
       font-size: clamp(28px, 3vw, 46px);
       line-height: 1.08;
       margin: 0;
@@ -683,7 +1031,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 12px;
+      padding: 8px 14px;
       border-radius: 999px;
       background: rgba(255,255,255,.04);
       border: 1px solid rgba(255,255,255,.08);
@@ -702,6 +1050,148 @@
       opacity: .9;
     }
 
+    /* ─── CONTACT (NEW) ─── */
+    .contact-section {
+      padding-top: 90px;
+      padding-bottom: 100px;
+    }
+
+    .contact-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+    }
+
+    .contact-info {
+      padding: 40px 36px;
+      backdrop-filter: blur(14px);
+    }
+
+    .contact-info h2 {
+      font-size: clamp(28px, 3.5vw, 44px);
+      margin-bottom: 20px;
+    }
+
+    .contact-info .contact-text {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.95;
+      margin-bottom: 32px;
+    }
+
+    .contact-details {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .contact-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .contact-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .contact-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--gold-light);
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    .contact-row .label {
+      font-size: 11px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .contact-row .value {
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .contact-form-card {
+      padding: 40px 36px;
+      backdrop-filter: blur(14px);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      outline: none;
+      transition: border-color .3s, background .3s;
+      resize: vertical;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: rgba(143,124,89,.4);
+      background: rgba(255,255,255,.05);
+    }
+
+    .form-group textarea { min-height: 100px; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      height: 50px;
+      border-radius: 999px;
+      border: 1px solid rgba(143,124,89,.35);
+      background: linear-gradient(135deg, rgba(143,124,89,.15), rgba(112,101,132,.08));
+      color: var(--gold-light);
+      font-family: var(--font-body);
+      font-size: 14px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .4s var(--ease);
+    }
+
+    .submit-btn:hover {
+      background: linear-gradient(135deg, rgba(143,124,89,.28), rgba(112,101,132,.14));
+      border-color: rgba(143,124,89,.55);
+      box-shadow: 0 12px 40px rgba(143,124,89,.12);
+    }
+
+    /* ─── FOOTER ─── */
     .site-footer {
       position: relative;
       z-index: 2;
@@ -712,23 +1202,78 @@
     .footer-inner {
       max-width: var(--max);
       margin: 0 auto;
-      padding: 28px;
+      padding: 48px 28px 32px;
+    }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr .8fr;
+      gap: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .footer-brand .logo-glyph { margin-bottom: 16px; }
+
+    .footer-brand-name {
+      font-size: 14px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .footer-brand p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+      max-width: 280px;
+      margin: 0;
+    }
+
+    .footer-col h4 {
+      font-size: 12px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin: 0 0 18px;
+      font-weight: 500;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .footer-col li { margin-bottom: 12px; }
+
+    .footer-col a {
+      color: var(--muted);
+      font-size: 14px;
+      transition: color .3s;
+    }
+
+    .footer-col a:hover { color: var(--text); }
+
+    .footer-bottom {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 20px;
+      padding-top: 24px;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
       letter-spacing: .04em;
     }
 
     .footer-tagline {
       color: #cfc8bb;
-      font-size: 12px;
+      font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: .18em;
+      letter-spacing: .16em;
     }
 
+    /* ─── SCROLL REVEAL ─── */
     .reveal {
       opacity: 0;
       transform: translate3d(0, 32px, 0);
@@ -740,16 +1285,21 @@
       transform: translate3d(0, 0, 0);
     }
 
+    /* stagger delays for grids */
+    .reveal-delay-1 { transition-delay: .08s; }
+    .reveal-delay-2 { transition-delay: .16s; }
+    .reveal-delay-3 { transition-delay: .24s; }
+    .reveal-delay-4 { transition-delay: .32s; }
+
+    /* ─── RESPONSIVE ─── */
     @media (max-width: 1200px) {
-      .section-head,
-      .story-layout,
-      .method-layout,
-      .manifesto-wrap { grid-template-columns: 1fr; }
+      .section-head, .story-layout, .method-layout, .manifesto-wrap, .contact-layout { grid-template-columns: 1fr; }
       .section-desc { justify-self: start; max-width: 100%; }
-      .story-copy p,
-      .method-copy p { max-width: 100%; }
-      .philosophy-grid,
-      .principle-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .story-copy p, .method-copy p { max-width: 100%; }
+      .philosophy-grid, .principle-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
     }
 
     @media (max-width: 860px) {
@@ -757,12 +1307,20 @@
       section { padding: 0 18px; }
       .hero-content { width: calc(100% - 34px); }
       .hero-frame { min-height: 78vh; }
-      .nav-links { gap: 8px; }
-      .nav-link, .lang-switch { padding: 0 14px; font-size: 13px; }
-      .philosophy-grid,
-      .principle-grid,
-      .method-grid { grid-template-columns: 1fr; }
-      .footer-inner { flex-direction: column; align-items: flex-start; }
+
+      .nav-center, .nav-cta { display: none; }
+      .menu-toggle { display: block; }
+      .mobile-menu { display: flex; }
+
+      .philosophy-grid, .principle-grid, .method-grid { grid-template-columns: 1fr; }
+      .services-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .process-timeline { flex-direction: column; gap: 28px; }
+      .process-timeline::before { display: none; }
+      .footer-top { grid-template-columns: 1fr; gap: 28px; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .contact-layout { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -778,21 +1336,48 @@
     <div class="shape s4"></div>
   </div>
 
-  <header class="site-header">
+  <!-- ═══ HEADER ═══ -->
+  <header class="site-header" id="siteHeader">
     <nav class="nav" aria-label="Main navigation">
       <a href="#home" class="brand-mark" aria-label="AKASOLV Home">
         <span class="logo-glyph" aria-hidden="true"></span>
         <span>AKASOLV</span>
       </a>
-      <div class="nav-links">
+
+      <div class="nav-center">
+        <a class="nav-link active" href="#home" data-i18n="navHome">首页</a>
         <a class="nav-link" href="#story" data-i18n="navStory">品牌故事</a>
         <a class="nav-link" href="#philosophy" data-i18n="navPhilosophy">品牌理念</a>
-        <button class="lang-switch" type="button" id="langToggle" aria-label="Switch language">EN / 中</button>
+        <a class="nav-link" href="#services" data-i18n="navServices">服务范围</a>
+        <a class="nav-link" href="#contact" data-i18n="navContact">联系我们</a>
       </div>
+
+      <div class="nav-right">
+        <button class="lang-switch" type="button" id="langToggle" aria-label="Switch language">EN / 中</button>
+        <a class="nav-cta" href="#contact" data-i18n="navCta">开始合作 <span class="arrow">→</span></a>
+      </div>
+
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
     </nav>
   </header>
 
+  <!-- ═══ MOBILE MENU ═══ -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a class="mobile-link" href="#home" data-i18n="navHome">首页 <span class="link-num">01</span></a>
+    <a class="mobile-link" href="#story" data-i18n="navStory">品牌故事 <span class="link-num">02</span></a>
+    <a class="mobile-link" href="#philosophy" data-i18n="navPhilosophy">品牌理念 <span class="link-num">03</span></a>
+    <a class="mobile-link" href="#services" data-i18n="navServices">服务范围 <span class="link-num">04</span></a>
+    <a class="mobile-link" href="#contact" data-i18n="navContact">联系我们 <span class="link-num">05</span></a>
+    <div class="mobile-bottom">
+      <button class="lang-switch" type="button" onclick="document.getElementById('langToggle').click()">EN / 中</button>
+      <a class="nav-cta" href="#contact" data-i18n="navCta">开始合作 <span class="arrow">→</span></a>
+    </div>
+  </div>
+
   <main>
+    <!-- ═══ HERO ═══ -->
     <section class="hero" id="home">
       <div class="hero-frame">
         <div class="hero-grid"></div>
@@ -804,14 +1389,19 @@
         <div class="hero-content reveal is-visible">
           <div class="eyebrow" data-i18n="heroEyebrow">数字艺术设计品牌</div>
           <h1>AKASOLV</h1>
-          <p class="tagline">AKASOLV-The Art of Absolute Solution</p>
+          <p class="tagline">The Art of Absolute Solution</p>
           <p class="hero-subline" data-i18n="heroSubline">
             在理性秩序与感性表达之间，我们为视觉语言建立更高维度的解法，让设计不仅被看见，更被感知。
           </p>
+          <div class="hero-scroll" data-i18n="heroScroll">
+            <span>向下探索</span>
+            <span class="scroll-line"></span>
+          </div>
         </div>
       </div>
     </section>
 
+    <!-- ═══ BRAND STORY ═══ -->
     <section id="story">
       <div class="section-head reveal">
         <div>
@@ -824,20 +1414,14 @@
       </div>
 
       <div class="story-layout">
-        <article class="story-copy reveal">
-          <div class="quote-mark">“</div>
-          <p data-i18n="storyP1">
-            AKASOLV以“Absolute Solution”为核心命题，将数字艺术、品牌叙事与现代设计方法融合，构建一种克制却有张力的视觉语言。我们不追逐表层热闹，而更关注作品在时间中留下的质感与辨识度。
-          </p>
-          <p data-i18n="storyP2">
-            品牌的起点来自一个明确判断：在信息过载的时代，真正有效的设计必须同时具备方向感、空间感与情绪价值。它要能传达逻辑，也要能制造气场；既能服务品牌目标，也能形成独立审美。
-          </p>
-          <p data-i18n="storyP3">
-            因此，AKASOLV坚持以深色低饱和调性为底，以抽象构成、留白节奏与细腻动态构建品牌场域，让每一次呈现都像一次被精确控制的艺术表达。
-          </p>
+        <article class="story-copy card-base reveal">
+          <div class="quote-mark">"</div>
+          <p data-i18n="storyP1">AKASOLV以"Absolute Solution"为核心命题，将数字艺术、品牌叙事与现代设计方法融合，构建一种克制却有张力的视觉语言。我们不追逐表层热闹，而更关注作品在时间中留下的质感与辨识度。</p>
+          <p data-i18n="storyP2">品牌的起点来自一个明确判断：在信息过载的时代，真正有效的设计必须同时具备方向感、空间感与情绪价值。它要能传达逻辑，也要能制造气场；既能服务品牌目标，也能形成独立审美。</p>
+          <p data-i18n="storyP3">因此，AKASOLV坚持以深色低饱和调性为底，以抽象构成、留白节奏与细腻动态构建品牌场域，让每一次呈现都像一次被精确控制的艺术表达。</p>
         </article>
 
-        <aside class="story-visual reveal" aria-hidden="true">
+        <aside class="story-visual card-base reveal" aria-hidden="true">
           <div class="composition">
             <div class="plate p1"></div>
             <div class="plate p2"></div>
@@ -853,6 +1437,9 @@
       </div>
     </section>
 
+    <div class="section-divider"><div class="divider-line"></div></div>
+
+    <!-- ═══ PHILOSOPHY ═══ -->
     <section id="philosophy">
       <div class="section-head reveal">
         <div>
@@ -860,24 +1447,22 @@
           <h2 data-i18n="philosophyTitle">品牌不是被装饰出来的，而是被定义、被推导、被持续兑现的。</h2>
         </div>
         <div class="section-desc" data-i18n="philosophyDesc">
-          AKASOLV围绕“Absolute Solution”建立理念框架：先判断本质，再构建设计语言，最后将视觉体验沉淀为品牌资产。这不是单次表达，而是长期系统工程。
+          AKASOLV围绕"Absolute Solution"建立理念框架：先判断本质，再构建设计语言，最后将视觉体验沉淀为品牌资产。这不是单次表达，而是长期系统工程。
         </div>
       </div>
 
       <div class="philosophy-grid">
-        <article class="philosophy-card reveal">
+        <article class="philosophy-card card-base reveal">
           <div class="card-index">01</div>
           <h3 data-i18n="phCard1Title">Clarity</h3>
           <p data-i18n="phCard1Text">所有表达先从问题定义开始。我们强调清晰判断、目标聚焦与信息层级，让品牌每一次呈现都具备明确方向，而不是被情绪牵引失焦。</p>
         </article>
-
-        <article class="philosophy-card reveal">
+        <article class="philosophy-card card-base reveal reveal-delay-1">
           <div class="card-index">02</div>
           <h3 data-i18n="phCard2Title">Tension</h3>
           <p data-i18n="phCard2Text">真正打动人的视觉，从来不是喧闹，而是克制中的张力。AKASOLV通过留白、暗调、结构对比与动态节奏，让页面在静止中持续释放存在感。</p>
         </article>
-
-        <article class="philosophy-card reveal">
+        <article class="philosophy-card card-base reveal reveal-delay-2">
           <div class="card-index">03</div>
           <h3 data-i18n="phCard3Title">Continuity</h3>
           <p data-i18n="phCard3Text">我们不把设计视为一次性交付，而更像一个可延展的品牌系统。每个视觉选择都需要具备延续性、识别性与未来扩展的兼容能力。</p>
@@ -885,6 +1470,9 @@
       </div>
     </section>
 
+    <div class="section-divider"><div class="divider-line"></div></div>
+
+    <!-- ═══ DESIGN PRINCIPLES ═══ -->
     <section id="principles">
       <div class="section-head reveal">
         <div>
@@ -897,19 +1485,17 @@
       </div>
 
       <div class="principle-grid">
-        <article class="principle-card reveal">
+        <article class="principle-card card-base reveal">
           <div class="card-index">A1</div>
           <h3 data-i18n="prCard1Title">留白不是空，而是控制</h3>
           <p data-i18n="prCard1Text">通过大面积呼吸空间，强化主体存在感，减少视觉噪音，让每个信息节点都更有重量、更具被感知的价值。</p>
         </article>
-
-        <article class="principle-card reveal">
+        <article class="principle-card card-base reveal reveal-delay-1">
           <div class="card-index">A2</div>
           <h3 data-i18n="prCard2Title">深色不是压抑，而是场域</h3>
           <p data-i18n="prCard2Text">深灰、墨蓝与炭黑构成稳定基底，让点缀色与光影变化拥有更强的控制力，也让整体气质更接近艺术展陈与高级品牌空间。</p>
         </article>
-
-        <article class="principle-card reveal">
+        <article class="principle-card card-base reveal reveal-delay-2">
           <div class="card-index">A3</div>
           <h3 data-i18n="prCard3Title">动态不是炫技，而是呼吸</h3>
           <p data-i18n="prCard3Text">所有动态都应服务情绪与节奏。微弱的漂浮、渐入、流动与响应，是页面的呼吸系统，而不是夺走内容焦点的噪声。</p>
@@ -917,6 +1503,60 @@
       </div>
     </section>
 
+    <!-- ═══ SERVICES (NEW) ═══ -->
+    <section id="services">
+      <div class="section-head reveal">
+        <div>
+          <div class="section-kicker">Services</div>
+          <h2 data-i18n="servicesTitle">每一项服务，都是一次品牌感知的精确构建。</h2>
+        </div>
+        <div class="section-desc" data-i18n="servicesDesc">
+          AKASOLV提供从品牌定义到数字落地的全链路设计服务。我们不做孤立的美化工作，而是将每个触点纳入统一的品牌逻辑中。
+        </div>
+      </div>
+
+      <div class="services-grid">
+        <article class="service-card card-base reveal">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+          </div>
+          <h3 data-i18n="svcCard1Title">品牌视觉系统</h3>
+          <p data-i18n="svcCard1Text">从品牌核心识别到完整视觉规范，构建一套可延续、可复用的设计语言系统，让品牌在任何触点保持统一的高级感。</p>
+          <div class="service-tag" data-i18n="svcCard1Tag">VI · 品牌规范 · 设计系统</div>
+        </article>
+
+        <article class="service-card card-base reveal reveal-delay-1">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3 data-i18n="svcCard2Title">数字体验设计</h3>
+          <p data-i18n="svcCard2Text">网站、应用与数字产品的全流程体验设计。将品牌气质融入每一次交互，让用户在使用中自然建立品牌认知。</p>
+          <div class="service-tag" data-i18n="svcCard2Tag">Web · App · 交互设计</div>
+        </article>
+
+        <article class="service-card card-base reveal reveal-delay-2">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <h3 data-i18n="svcCard3Title">创意内容制作</h3>
+          <p data-i18n="svcCard3Text">从动态视觉到品牌影像，我们用克制且有张力的创意语言，为品牌打造具有记忆点的数字内容资产。</p>
+          <div class="service-tag" data-i18n="svcCard3Tag">动态设计 · 影像 · 3D</div>
+        </article>
+
+        <article class="service-card card-base reveal reveal-delay-3">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
+          <h3 data-i18n="svcCard4Title">品牌战略咨询</h3>
+          <p data-i18n="svcCard4Text">在设计之前，先帮助品牌厘清定位、受众与差异化策略。让视觉不只好看，更有明确的商业价值和感知目标。</p>
+          <div class="service-tag" data-i18n="svcCard4Tag">定位 · 策略 · 差异化</div>
+        </article>
+      </div>
+    </section>
+
+    <div class="section-divider"><div class="divider-line"></div></div>
+
+    <!-- ═══ CREATIVE METHOD ═══ -->
     <section id="method">
       <div class="section-head reveal">
         <div>
@@ -929,11 +1569,10 @@
       </div>
 
       <div class="method-layout">
-        <article class="method-copy reveal">
+        <article class="method-copy card-base reveal">
           <p data-i18n="methodP1">第一步是识别品牌的核心判断：它要传达什么态度、建立什么记忆、占据什么感知位置。没有这个判断，视觉只会停留在表面风格。</p>
           <p data-i18n="methodP2">第二步是构建视觉逻辑：色彩如何分层，空间如何呼吸，动态如何参与，文案如何减少冗余但保留力度。每一个动作都围绕统一语义展开。</p>
           <p data-i18n="methodP3">第三步是形成系统沉淀：让首页、后续页面、品牌物料与数字触点在未来依旧保持一致语气，使品牌表达具备复用能力与持续迭代价值。</p>
-
           <div class="metric">
             <div class="metric-item">
               <span class="metric-num">01</span>
@@ -951,25 +1590,22 @@
         </article>
 
         <div class="method-grid">
-          <article class="method-grid-card reveal">
+          <article class="method-grid-card card-base reveal">
             <div class="card-index">B1</div>
             <h3 data-i18n="mgCard1Title">品牌判断</h3>
             <p data-i18n="mgCard1Text">明确品牌希望被如何认知，建立视觉与商业目标之间的一致关系。</p>
           </article>
-
-          <article class="method-grid-card reveal">
+          <article class="method-grid-card card-base reveal reveal-delay-1">
             <div class="card-index">B2</div>
             <h3 data-i18n="mgCard2Title">语言构建</h3>
             <p data-i18n="mgCard2Text">通过色彩、构图、字距、材质感和动态节奏，将抽象理念转化为可持续调用的视觉语法。</p>
           </article>
-
-          <article class="method-grid-card reveal">
+          <article class="method-grid-card card-base reveal reveal-delay-2">
             <div class="card-index">B3</div>
             <h3 data-i18n="mgCard3Title">体验校准</h3>
             <p data-i18n="mgCard3Text">平衡艺术表达与阅读效率，确保页面既具气场，也具备良好的信息触达能力。</p>
           </article>
-
-          <article class="method-grid-card reveal">
+          <article class="method-grid-card card-base reveal reveal-delay-3">
             <div class="card-index">B4</div>
             <h3 data-i18n="mgCard4Title">长期沉淀</h3>
             <p data-i18n="mgCard4Text">让品牌在后续扩展中保持一致风格，使视觉资产真正成为长期价值的一部分。</p>
@@ -978,8 +1614,74 @@
       </div>
     </section>
 
+    <div class="section-divider"><div class="divider-line"></div></div>
+
+    <!-- ═══ PROCESS (NEW) ═══ -->
+    <section id="process">
+      <div class="section-head reveal">
+        <div>
+          <div class="section-kicker">Process</div>
+          <h2 data-i18n="processTitle">系统化的协作流程，确保每个环节精准交付。</h2>
+        </div>
+        <div class="section-desc" data-i18n="processDesc">
+          从第一次沟通到最终交付，我们以清晰的阶段划分和持续的沟通机制，让合作过程本身也具备AKASOLV的品质标准。
+        </div>
+      </div>
+
+      <div class="process-timeline reveal">
+        <div class="process-step">
+          <div class="process-num">1</div>
+          <h4 data-i18n="proc1Title">深度沟通</h4>
+          <p data-i18n="proc1Text">理解品牌核心诉求、受众特征与商业目标，建立项目的判断基底。</p>
+        </div>
+        <div class="process-step">
+          <div class="process-num">2</div>
+          <h4 data-i18n="proc2Title">策略定义</h4>
+          <p data-i18n="proc2Text">明确品牌定位、视觉方向与关键差异点，形成创意策略文档。</p>
+        </div>
+        <div class="process-step">
+          <div class="process-num">3</div>
+          <h4 data-i18n="proc3Title">设计构建</h4>
+          <p data-i18n="proc3Text">基于策略展开系统化设计，包括视觉语言、交互逻辑与动态表达。</p>
+        </div>
+        <div class="process-step">
+          <div class="process-num">4</div>
+          <h4 data-i18n="proc4Title">校准迭代</h4>
+          <p data-i18n="proc4Text">通过多轮校准确保品牌表达的精确度，打磨每一个细节至交付标准。</p>
+        </div>
+        <div class="process-step">
+          <div class="process-num">5</div>
+          <h4 data-i18n="proc5Title">交付沉淀</h4>
+          <p data-i18n="proc5Text">交付完整品牌资产包，并提供后续延展的指导规范与技术支持。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ STATS (NEW) ═══ -->
     <section>
-      <div class="manifesto-band reveal">
+      <div class="stats-row">
+        <div class="stat-item reveal">
+          <div class="stat-num" data-i18n="stat1Num">60+</div>
+          <div class="stat-label" data-i18n="stat1Label">品牌项目交付</div>
+        </div>
+        <div class="stat-item reveal reveal-delay-1">
+          <div class="stat-num" data-i18n="stat2Num">95%</div>
+          <div class="stat-label" data-i18n="stat2Label">客户续约率</div>
+        </div>
+        <div class="stat-item reveal reveal-delay-2">
+          <div class="stat-num" data-i18n="stat3Num">8+</div>
+          <div class="stat-label" data-i18n="stat3Label">行业领域覆盖</div>
+        </div>
+        <div class="stat-item reveal reveal-delay-3">
+          <div class="stat-num" data-i18n="stat4Num">3x</div>
+          <div class="stat-label" data-i18n="stat4Label">品牌感知提升</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ MANIFESTO ═══ -->
+    <section>
+      <div class="manifesto-band card-base reveal">
         <div class="manifesto-wrap">
           <div>
             <div class="section-kicker">Brand Manifesto</div>
@@ -996,136 +1698,333 @@
         </div>
       </div>
     </section>
+
+    <!-- ═══ CONTACT (NEW) ═══ -->
+    <section class="contact-section" id="contact">
+      <div class="section-head reveal">
+        <div>
+          <div class="section-kicker">Contact</div>
+          <h2 data-i18n="contactTitle">准备好开始你的品牌升级了吗？</h2>
+        </div>
+        <div class="section-desc" data-i18n="contactDesc">
+          无论你正处于品牌从零到一的构建阶段，还是需要对现有品牌进行系统化升级，我们都期待与你展开一次深度对话。
+        </div>
+      </div>
+
+      <div class="contact-layout">
+        <div class="contact-info card-base reveal">
+          <h2 data-i18n="contactInfoTitle">与我们对话</h2>
+          <div class="contact-text" data-i18n="contactInfoText">
+            我们重视每一次合作的起点。请通过右侧表单或以下方式联系我们，我们将在24小时内回复。
+          </div>
+          <div class="contact-details">
+            <div class="contact-row">
+              <div class="contact-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div>
+                <div class="label">Email</div>
+                <div class="value">hello@akasolv.com</div>
+              </div>
+            </div>
+            <div class="contact-row">
+              <div class="contact-icon">
+                <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              </div>
+              <div>
+                <div class="label" data-i18n="contactLocLabel">工作室</div>
+                <div class="value" data-i18n="contactLocValue">上海 · 静安区</div>
+              </div>
+            </div>
+            <div class="contact-row">
+              <div class="contact-icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div>
+                <div class="label" data-i18n="contactTimeLabel">工作时间</div>
+                <div class="value" data-i18n="contactTimeValue">周一至周五 10:00 – 19:00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-form-card card-base reveal reveal-delay-1">
+          <div class="form-row">
+            <div class="form-group">
+              <label data-i18n="formName">姓名</label>
+              <input type="text" placeholder="" />
+            </div>
+            <div class="form-group">
+              <label data-i18n="formCompany">公司</label>
+              <input type="text" placeholder="" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label data-i18n="formEmail">邮箱</label>
+            <input type="email" placeholder="" />
+          </div>
+          <div class="form-group">
+            <label data-i18n="formProject">项目描述</label>
+            <textarea placeholder=""></textarea>
+          </div>
+          <button class="submit-btn" type="button" data-i18n="formSubmit">提交咨询</button>
+        </div>
+      </div>
+    </section>
   </main>
 
+  <!-- ═══ FOOTER ═══ -->
   <footer class="site-footer">
     <div class="footer-inner">
-      <div data-i18n="footerCopy">© 2026 AKASOLV. 保留所有权利。</div>
-      <div class="footer-tagline">AKASOLV-The Art of Absolute Solution</div>
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="logo-glyph" aria-hidden="true"></span>
+          <div class="footer-brand-name">AKASOLV</div>
+          <p data-i18n="footerBrandDesc">在理性与感性之间，构建可持续的品牌感知。</p>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footerNav">导航</h4>
+          <ul>
+            <li><a href="#story" data-i18n="navStory">品牌故事</a></li>
+            <li><a href="#philosophy" data-i18n="fNavPhilosophy">品牌理念</a></li>
+            <li><a href="#services" data-i18n="navServices">服务范围</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footerServices">服务</h4>
+          <ul>
+            <li><a href="#services" data-i18n="fSvc1">品牌视觉系统</a></li>
+            <li><a href="#services" data-i18n="fSvc2">数字体验设计</a></li>
+            <li><a href="#services" data-i18n="fSvc3">创意内容制作</a></li>
+            <li><a href="#services" data-i18n="fSvc4">品牌战略咨询</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footerConnect">联系</h4>
+          <ul>
+            <li><a href="mailto:hello@akasolv.com">hello@akasolv.com</a></li>
+            <li><a href="#contact" data-i18n="fConnect1">开始合作</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div data-i18n="footerCopy">© 2026 AKASOLV. 保留所有权利。</div>
+        <div class="footer-tagline">AKASOLV — The Art of Absolute Solution</div>
+      </div>
     </div>
   </footer>
 
   <script>
     (function () {
+      /* ── i18n ── */
       const copy = {
         zh: {
+          navHome: '首页',
           navStory: '品牌故事',
           navPhilosophy: '品牌理念',
+          navServices: '服务范围',
+          navContact: '联系我们',
+          navCta: '开始合作',
           heroEyebrow: '数字艺术设计品牌',
           heroSubline: '在理性秩序与感性表达之间，我们为视觉语言建立更高维度的解法，让设计不仅被看见，更被感知。',
+          heroScroll: '向下探索',
           storyTitle: '在空间、秩序与情绪之间，重构品牌表达。',
           storyDesc: 'AKASOLV诞生于对数字视觉边界的持续探索。我们相信，真正高级的设计，不是堆叠元素，而是将复杂问题转化为可感知、可记忆、可沉淀的视觉答案。',
-          storyP1: 'AKASOLV以“Absolute Solution”为核心命题，将数字艺术、品牌叙事与现代设计方法融合，构建一种克制却有张力的视觉语言。我们不追逐表层热闹，而更关注作品在时间中留下的质感与辨识度。',
+          storyP1: 'AKASOLV以"Absolute Solution"为核心命题，将数字艺术、品牌叙事与现代设计方法融合，构建一种克制却有张力的视觉语言。我们不追逐表层热闹，而更关注作品在时间中留下的质感与辨识度。',
           storyP2: '品牌的起点来自一个明确判断：在信息过载的时代，真正有效的设计必须同时具备方向感、空间感与情绪价值。它要能传达逻辑，也要能制造气场；既能服务品牌目标，也能形成独立审美。',
           storyP3: '因此，AKASOLV坚持以深色低饱和调性为底，以抽象构成、留白节奏与细腻动态构建品牌场域，让每一次呈现都像一次被精确控制的艺术表达。',
           philosophyTitle: '品牌不是被装饰出来的，而是被定义、被推导、被持续兑现的。',
-          philosophyDesc: 'AKASOLV围绕“Absolute Solution”建立理念框架：先判断本质，再构建设计语言，最后将视觉体验沉淀为品牌资产。这不是单次表达，而是长期系统工程。',
-          phCard1Title: 'Clarity',
-          phCard1Text: '所有表达先从问题定义开始。我们强调清晰判断、目标聚焦与信息层级，让品牌每一次呈现都具备明确方向，而不是被情绪牵引失焦。',
-          phCard2Title: 'Tension',
-          phCard2Text: '真正打动人的视觉，从来不是喧闹，而是克制中的张力。AKASOLV通过留白、暗调、结构对比与动态节奏，让页面在静止中持续释放存在感。',
-          phCard3Title: 'Continuity',
-          phCard3Text: '我们不把设计视为一次性交付，而更像一个可延展的品牌系统。每个视觉选择都需要具备延续性、识别性与未来扩展的兼容能力。',
+          philosophyDesc: 'AKASOLV围绕"Absolute Solution"建立理念框架：先判断本质，再构建设计语言，最后将视觉体验沉淀为品牌资产。这不是单次表达，而是长期系统工程。',
+          phCard1Title: 'Clarity', phCard1Text: '所有表达先从问题定义开始。我们强调清晰判断、目标聚焦与信息层级，让品牌每一次呈现都具备明确方向，而不是被情绪牵引失焦。',
+          phCard2Title: 'Tension', phCard2Text: '真正打动人的视觉，从来不是喧闹，而是克制中的张力。AKASOLV通过留白、暗调、结构对比与动态节奏，让页面在静止中持续释放存在感。',
+          phCard3Title: 'Continuity', phCard3Text: '我们不把设计视为一次性交付，而更像一个可延展的品牌系统。每个视觉选择都需要具备延续性、识别性与未来扩展的兼容能力。',
           principlesTitle: '以原则驱动审美，以系统保证表达的一致性与高级感。',
           principlesDesc: '在AKASOLV的语境中，设计不是元素堆砌，而是从秩序、比例、光影、节奏中提炼品牌信号。以下原则构成了品牌表达的核心框架。',
-          prCard1Title: '留白不是空，而是控制',
-          prCard1Text: '通过大面积呼吸空间，强化主体存在感，减少视觉噪音，让每个信息节点都更有重量、更具被感知的价值。',
-          prCard2Title: '深色不是压抑，而是场域',
-          prCard2Text: '深灰、墨蓝与炭黑构成稳定基底，让点缀色与光影变化拥有更强的控制力，也让整体气质更接近艺术展陈与高级品牌空间。',
-          prCard3Title: '动态不是炫技，而是呼吸',
-          prCard3Text: '所有动态都应服务情绪与节奏。微弱的漂浮、渐入、流动与响应，是页面的呼吸系统，而不是夺走内容焦点的噪声。',
+          prCard1Title: '留白不是空，而是控制', prCard1Text: '通过大面积呼吸空间，强化主体存在感，减少视觉噪音，让每个信息节点都更有重量、更具被感知的价值。',
+          prCard2Title: '深色不是压抑，而是场域', prCard2Text: '深灰、墨蓝与炭黑构成稳定基底，让点缀色与光影变化拥有更强的控制力，也让整体气质更接近艺术展陈与高级品牌空间。',
+          prCard3Title: '动态不是炫技，而是呼吸', prCard3Text: '所有动态都应服务情绪与节奏。微弱的漂浮、渐入、流动与响应，是页面的呼吸系统，而不是夺走内容焦点的噪声。',
+          servicesTitle: '每一项服务，都是一次品牌感知的精确构建。',
+          servicesDesc: 'AKASOLV提供从品牌定义到数字落地的全链路设计服务。我们不做孤立的美化工作，而是将每个触点纳入统一的品牌逻辑中。',
+          svcCard1Title: '品牌视觉系统', svcCard1Text: '从品牌核心识别到完整视觉规范，构建一套可延续、可复用的设计语言系统，让品牌在任何触点保持统一的高级感。', svcCard1Tag: 'VI · 品牌规范 · 设计系统',
+          svcCard2Title: '数字体验设计', svcCard2Text: '网站、应用与数字产品的全流程体验设计。将品牌气质融入每一次交互，让用户在使用中自然建立品牌认知。', svcCard2Tag: 'Web · App · 交互设计',
+          svcCard3Title: '创意内容制作', svcCard3Text: '从动态视觉到品牌影像，我们用克制且有张力的创意语言，为品牌打造具有记忆点的数字内容资产。', svcCard3Tag: '动态设计 · 影像 · 3D',
+          svcCard4Title: '品牌战略咨询', svcCard4Text: '在设计之前，先帮助品牌厘清定位、受众与差异化策略。让视觉不只好看，更有明确的商业价值和感知目标。', svcCard4Tag: '定位 · 策略 · 差异化',
           methodTitle: '从判断到表达，AKASOLV更重视设计背后的推导路径。',
           methodDesc: '我们将品牌表达拆解为可执行的创意路径，让抽象美学和实际沟通目标在同一体系中协同工作，既保持艺术性，也保证信息效率。',
           methodP1: '第一步是识别品牌的核心判断：它要传达什么态度、建立什么记忆、占据什么感知位置。没有这个判断，视觉只会停留在表面风格。',
           methodP2: '第二步是构建视觉逻辑：色彩如何分层，空间如何呼吸，动态如何参与，文案如何减少冗余但保留力度。每一个动作都围绕统一语义展开。',
           methodP3: '第三步是形成系统沉淀：让首页、后续页面、品牌物料与数字触点在未来依旧保持一致语气，使品牌表达具备复用能力与持续迭代价值。',
-          metric1: '核心判断',
-          metric2: '视觉逻辑',
-          metric3: '系统资产',
-          mgCard1Title: '品牌判断',
-          mgCard1Text: '明确品牌希望被如何认知，建立视觉与商业目标之间的一致关系。',
-          mgCard2Title: '语言构建',
-          mgCard2Text: '通过色彩、构图、字距、材质感和动态节奏，将抽象理念转化为可持续调用的视觉语法。',
-          mgCard3Title: '体验校准',
-          mgCard3Text: '平衡艺术表达与阅读效率，确保页面既具气场，也具备良好的信息触达能力。',
-          mgCard4Title: '长期沉淀',
-          mgCard4Text: '让品牌在后续扩展中保持一致风格，使视觉资产真正成为长期价值的一部分。',
+          metric1: '核心判断', metric2: '视觉逻辑', metric3: '系统资产',
+          mgCard1Title: '品牌判断', mgCard1Text: '明确品牌希望被如何认知，建立视觉与商业目标之间的一致关系。',
+          mgCard2Title: '语言构建', mgCard2Text: '通过色彩、构图、字距、材质感和动态节奏，将抽象理念转化为可持续调用的视觉语法。',
+          mgCard3Title: '体验校准', mgCard3Text: '平衡艺术表达与阅读效率，确保页面既具气场，也具备良好的信息触达能力。',
+          mgCard4Title: '长期沉淀', mgCard4Text: '让品牌在后续扩展中保持一致风格，使视觉资产真正成为长期价值的一部分。',
+          processTitle: '系统化的协作流程，确保每个环节精准交付。',
+          processDesc: '从第一次沟通到最终交付，我们以清晰的阶段划分和持续的沟通机制，让合作过程本身也具备AKASOLV的品质标准。',
+          proc1Title: '深度沟通', proc1Text: '理解品牌核心诉求、受众特征与商业目标，建立项目的判断基底。',
+          proc2Title: '策略定义', proc2Text: '明确品牌定位、视觉方向与关键差异点，形成创意策略文档。',
+          proc3Title: '设计构建', proc3Text: '基于策略展开系统化设计，包括视觉语言、交互逻辑与动态表达。',
+          proc4Title: '校准迭代', proc4Text: '通过多轮校准确保品牌表达的精确度，打磨每一个细节至交付标准。',
+          proc5Title: '交付沉淀', proc5Text: '交付完整品牌资产包，并提供后续延展的指导规范与技术支持。',
+          stat1Num: '60+', stat1Label: '品牌项目交付',
+          stat2Num: '95%', stat2Label: '客户续约率',
+          stat3Num: '8+', stat3Label: '行业领域覆盖',
+          stat4Num: '3x', stat4Label: '品牌感知提升',
           manifestoTitle: '我们不制造短暂的视觉噪音，只构建可持续的品牌感知。',
           manifestoCopy: 'AKASOLV相信，设计的真正价值不在于让页面看起来复杂，而在于让品牌表达变得更准确、更稳定、更难被替代。每一层光影、每一段留白、每一次动态，都应为品牌气质服务，并最终沉淀为长期识别力。',
-          manChip1: 'Absolute Precision',
-          manChip2: 'Controlled Emotion',
-          manChip3: 'Quiet Authority',
+          manChip1: 'Absolute Precision', manChip2: 'Controlled Emotion', manChip3: 'Quiet Authority',
+          contactTitle: '准备好开始你的品牌升级了吗？',
+          contactDesc: '无论你正处于品牌从零到一的构建阶段，还是需要对现有品牌进行系统化升级，我们都期待与你展开一次深度对话。',
+          contactInfoTitle: '与我们对话',
+          contactInfoText: '我们重视每一次合作的起点。请通过右侧表单或以下方式联系我们，我们将在24小时内回复。',
+          contactLocLabel: '工作室', contactLocValue: '上海 · 静安区',
+          contactTimeLabel: '工作时间', contactTimeValue: '周一至周五 10:00 – 19:00',
+          formName: '姓名', formCompany: '公司', formEmail: '邮箱', formProject: '项目描述', formSubmit: '提交咨询',
+          footerBrandDesc: '在理性与感性之间，构建可持续的品牌感知。',
+          footerNav: '导航', fNavPhilosophy: '品牌理念',
+          footerServices: '服务', fSvc1: '品牌视觉系统', fSvc2: '数字体验设计', fSvc3: '创意内容制作', fSvc4: '品牌战略咨询',
+          footerConnect: '联系', fConnect1: '开始合作',
           footerCopy: '© 2026 AKASOLV. 保留所有权利。'
         },
         en: {
-          navStory: 'Brand Story',
+          navHome: 'Home',
+          navStory: 'Story',
           navPhilosophy: 'Philosophy',
+          navServices: 'Services',
+          navContact: 'Contact',
+          navCta: 'Start a Project',
           heroEyebrow: 'Digital Art Design Brand',
           heroSubline: 'Between rational structure and emotional expression, we shape a higher-order visual language so design is not only seen, but deeply felt.',
+          heroScroll: 'Scroll to explore',
           storyTitle: 'Reframing brand expression through space, order, and emotion.',
           storyDesc: 'AKASOLV was born from a continuous exploration of digital visual boundaries. We believe elevated design is not about piling on elements, but about turning complexity into visual answers that can be felt, remembered, and retained.',
-          storyP1: 'With “Absolute Solution” as its central proposition, AKASOLV merges digital art, brand narrative, and contemporary design methodology into a visual language that is restrained yet charged with tension. We do not pursue superficial spectacle; we focus on texture, longevity, and distinction.',
+          storyP1: 'With "Absolute Solution" as its central proposition, AKASOLV merges digital art, brand narrative, and contemporary design methodology into a visual language that is restrained yet charged with tension. We do not pursue superficial spectacle; we focus on texture, longevity, and distinction.',
           storyP2: 'The brand began with a clear judgment: in an age of information overload, effective design must deliver direction, spatial awareness, and emotional value at the same time. It should communicate logic, generate presence, serve business goals, and still maintain an independent aesthetic.',
           storyP3: 'That is why AKASOLV builds its identity on dark low-saturation tones, abstract composition, measured whitespace, and refined motion—turning every presentation into a precisely controlled act of artistic expression.',
           philosophyTitle: 'A brand is not decorated into existence. It is defined, derived, and consistently fulfilled.',
-          philosophyDesc: 'AKASOLV structures its philosophy around “Absolute Solution”: identify the essence, build the design language, and turn visual experience into long-term brand equity. This is not a one-time expression, but a system sustained over time.',
-          phCard1Title: 'Clarity',
-          phCard1Text: 'Every expression starts with defining the problem. We prioritize clarity of judgment, focus of intent, and disciplined hierarchy so the brand speaks with direction rather than drift.',
-          phCard2Title: 'Tension',
-          phCard2Text: 'What moves people is rarely noise. It is tension held in restraint. Through whitespace, dark tonal control, structural contrast, and measured motion, AKASOLV creates presence that continues to resonate.',
-          phCard3Title: 'Continuity',
-          phCard3Text: 'We do not treat design as a one-off delivery, but as an expandable system. Each visual decision must support continuity, recognizability, and future scalability.',
+          philosophyDesc: 'AKASOLV structures its philosophy around "Absolute Solution": identify the essence, build the design language, and turn visual experience into long-term brand equity. This is not a one-time expression, but a system sustained over time.',
+          phCard1Title: 'Clarity', phCard1Text: 'Every expression starts with defining the problem. We prioritize clarity of judgment, focus of intent, and disciplined hierarchy so the brand speaks with direction rather than drift.',
+          phCard2Title: 'Tension', phCard2Text: 'What moves people is rarely noise. It is tension held in restraint. Through whitespace, dark tonal control, structural contrast, and measured motion, AKASOLV creates presence that continues to resonate.',
+          phCard3Title: 'Continuity', phCard3Text: 'We do not treat design as a one-off delivery, but as an expandable system. Each visual decision must support continuity, recognizability, and future scalability.',
           principlesTitle: 'Aesthetic discipline guided by principles, with system logic ensuring consistency and refinement.',
           principlesDesc: 'In the AKASOLV framework, design is not accumulation. It is the extraction of brand signals from order, proportion, light, and rhythm. These principles form the foundation of expression.',
-          prCard1Title: 'Whitespace as Control',
-          prCard1Text: 'Generous breathing space strengthens focal presence, reduces visual noise, and gives each information node more weight and perceptual value.',
-          prCard2Title: 'Darkness as Spatial Field',
-          prCard2Text: 'Deep gray, ink blue, and charcoal black establish a stable foundation where accent tones and lighting shifts gain greater precision and authority.',
-          prCard3Title: 'Motion as Breathing',
-          prCard3Text: 'Motion should serve emotion and rhythm. Subtle floating, fading, flowing, and responsive transitions form the page’s breathing system instead of stealing attention from the message.',
+          prCard1Title: 'Whitespace as Control', prCard1Text: 'Generous breathing space strengthens focal presence, reduces visual noise, and gives each information node more weight and perceptual value.',
+          prCard2Title: 'Darkness as Spatial Field', prCard2Text: 'Deep gray, ink blue, and charcoal black establish a stable foundation where accent tones and lighting shifts gain greater precision and authority.',
+          prCard3Title: 'Motion as Breathing', prCard3Text: 'Motion should serve emotion and rhythm. Subtle floating, fading, flowing, and responsive transitions form the page\'s breathing system instead of stealing attention from the message.',
+          servicesTitle: 'Every service is a precise construction of brand perception.',
+          servicesDesc: 'AKASOLV offers full-chain design services from brand definition to digital implementation. We don\'t do isolated beautification—every touchpoint is integrated into a unified brand logic.',
+          svcCard1Title: 'Brand Visual Systems', svcCard1Text: 'From core brand identity to complete visual specifications, we build a sustainable, reusable design language system that maintains refined consistency across all touchpoints.', svcCard1Tag: 'VI · Guidelines · Design System',
+          svcCard2Title: 'Digital Experience Design', svcCard2Text: 'Full-process experience design for websites, applications, and digital products. We infuse brand character into every interaction, building brand recognition naturally through use.', svcCard2Tag: 'Web · App · Interaction',
+          svcCard3Title: 'Creative Content Production', svcCard3Text: 'From motion graphics to brand imagery, we use a restrained yet powerful creative language to craft memorable digital content assets for brands.', svcCard3Tag: 'Motion · Film · 3D',
+          svcCard4Title: 'Brand Strategy Consulting', svcCard4Text: 'Before design begins, we help brands clarify positioning, audience, and differentiation strategy. Making visuals not just beautiful, but strategically purposeful.', svcCard4Tag: 'Positioning · Strategy · Differentiation',
           methodTitle: 'From judgment to expression, AKASOLV values the reasoning path behind design.',
           methodDesc: 'We break brand expression into an actionable creative method, allowing abstract aesthetics and practical communication goals to operate inside the same system.',
           methodP1: 'The first step is identifying the core judgment of the brand: what attitude it should communicate, what memory it should create, and what perceptual position it should occupy. Without that, visuals remain surface treatment.',
           methodP2: 'The second step is building visual logic: how color layers, how space breathes, how motion participates, and how language removes excess while preserving force. Every move must align with a unified meaning.',
           methodP3: 'The third step is system retention: ensuring the homepage, future pages, brand materials, and digital touchpoints continue to speak in one voice, making expression reusable and strategically durable.',
-          metric1: 'Core Judgment',
-          metric2: 'Visual Logic',
-          metric3: 'System Asset',
-          mgCard1Title: 'Brand Judgment',
-          mgCard1Text: 'Define how the brand should be perceived and align visual expression with business intent.',
-          mgCard2Title: 'Language Building',
-          mgCard2Text: 'Transform abstract ideas into reusable visual grammar through color, composition, typography, materiality, and motion rhythm.',
-          mgCard3Title: 'Experience Calibration',
-          mgCard3Text: 'Balance artistic atmosphere with reading efficiency so the page carries presence without sacrificing clarity.',
-          mgCard4Title: 'Long-Term Retention',
-          mgCard4Text: 'Keep the brand coherent as it expands, turning visual assets into long-term strategic value.',
+          metric1: 'Core Judgment', metric2: 'Visual Logic', metric3: 'System Asset',
+          mgCard1Title: 'Brand Judgment', mgCard1Text: 'Define how the brand should be perceived and align visual expression with business intent.',
+          mgCard2Title: 'Language Building', mgCard2Text: 'Transform abstract ideas into reusable visual grammar through color, composition, typography, materiality, and motion rhythm.',
+          mgCard3Title: 'Experience Calibration', mgCard3Text: 'Balance artistic atmosphere with reading efficiency so the page carries presence without sacrificing clarity.',
+          mgCard4Title: 'Long-Term Retention', mgCard4Text: 'Keep the brand coherent as it expands, turning visual assets into long-term strategic value.',
+          processTitle: 'A systematic collaboration process ensuring precision at every stage.',
+          processDesc: 'From first conversation to final delivery, we use clear phase structures and continuous communication to ensure the collaboration itself meets AKASOLV quality standards.',
+          proc1Title: 'Deep Discovery', proc1Text: 'Understanding core brand needs, audience characteristics, and business objectives to establish the project\'s foundational judgment.',
+          proc2Title: 'Strategy Definition', proc2Text: 'Clarifying brand positioning, visual direction, and key differentiators to form a creative strategy document.',
+          proc3Title: 'Design Build', proc3Text: 'Systematic design based on strategy, including visual language, interaction logic, and motion expression.',
+          proc4Title: 'Calibration', proc4Text: 'Multiple rounds of refinement ensuring brand expression accuracy, polishing every detail to delivery standards.',
+          proc5Title: 'Delivery & Retention', proc5Text: 'Delivering complete brand asset packages with guidelines and technical support for future extensions.',
+          stat1Num: '60+', stat1Label: 'Brand Projects Delivered',
+          stat2Num: '95%', stat2Label: 'Client Retention Rate',
+          stat3Num: '8+', stat3Label: 'Industries Covered',
+          stat4Num: '3x', stat4Label: 'Brand Perception Lift',
           manifestoTitle: 'We do not create temporary visual noise. We build lasting brand perception.',
           manifestoCopy: 'AKASOLV believes the real value of design is not making a page look complicated, but making brand expression more accurate, more stable, and harder to replace. Every layer of light, every section of whitespace, and every motion cue should serve the brand character and become long-term recognition.',
-          manChip1: 'Absolute Precision',
-          manChip2: 'Controlled Emotion',
-          manChip3: 'Quiet Authority',
+          manChip1: 'Absolute Precision', manChip2: 'Controlled Emotion', manChip3: 'Quiet Authority',
+          contactTitle: 'Ready to elevate your brand?',
+          contactDesc: 'Whether you\'re building a brand from scratch or need a systematic upgrade of an existing one, we look forward to starting a meaningful conversation with you.',
+          contactInfoTitle: 'Let\'s Talk',
+          contactInfoText: 'We value every beginning of a collaboration. Please reach out via the form or through the channels below. We respond within 24 hours.',
+          contactLocLabel: 'Studio', contactLocValue: 'Shanghai · Jing\'an District',
+          contactTimeLabel: 'Working Hours', contactTimeValue: 'Mon – Fri 10:00 – 19:00',
+          formName: 'Name', formCompany: 'Company', formEmail: 'Email', formProject: 'Project Description', formSubmit: 'Submit Inquiry',
+          footerBrandDesc: 'Building sustainable brand perception between rationality and sensibility.',
+          footerNav: 'Navigate', fNavPhilosophy: 'Philosophy',
+          footerServices: 'Services', fSvc1: 'Brand Visual Systems', fSvc2: 'Digital Experience Design', fSvc3: 'Creative Content Production', fSvc4: 'Brand Strategy Consulting',
+          footerConnect: 'Connect', fConnect1: 'Start a Project',
           footerCopy: '© 2026 AKASOLV. All rights reserved.'
         }
       };
 
       const state = { lang: 'zh' };
       const toggle = document.getElementById('langToggle');
-      const nodes = document.querySelectorAll('[data-i18n]');
+      const menuToggle = document.getElementById('menuToggle');
+      const mobileMenu = document.getElementById('mobileMenu');
+      const header = document.getElementById('siteHeader');
+
+      function getNodes() { return document.querySelectorAll('[data-i18n]'); }
 
       function applyLang(lang) {
         state.lang = lang;
         document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
-        nodes.forEach(node => {
+        getNodes().forEach(node => {
           const key = node.getAttribute('data-i18n');
           if (copy[lang][key]) node.textContent = copy[lang][key];
         });
         toggle.textContent = lang === 'zh' ? 'EN / 中' : '中 / EN';
       }
 
-      toggle.addEventListener('click', () => {
-        applyLang(state.lang === 'zh' ? 'en' : 'zh');
+      toggle.addEventListener('click', () => applyLang(state.lang === 'zh' ? 'en' : 'zh'));
+
+      /* ── Mobile menu ── */
+      menuToggle.addEventListener('click', () => {
+        const open = menuToggle.classList.toggle('open');
+        if (open) {
+          mobileMenu.style.display = 'flex';
+          requestAnimationFrame(() => mobileMenu.classList.add('show'));
+          document.body.style.overflow = 'hidden';
+        } else {
+          mobileMenu.classList.remove('show');
+          setTimeout(() => { mobileMenu.style.display = 'none'; }, 400);
+          document.body.style.overflow = '';
+        }
       });
 
+      mobileMenu.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          menuToggle.classList.remove('open');
+          mobileMenu.classList.remove('show');
+          setTimeout(() => { mobileMenu.style.display = 'none'; }, 400);
+          document.body.style.overflow = '';
+        });
+      });
+
+      /* ── Header scroll effect ── */
+      let lastY = 0;
+      window.addEventListener('scroll', () => {
+        const y = window.scrollY;
+        header.classList.toggle('scrolled', y > 60);
+        lastY = y;
+      }, { passive: true });
+
+      /* ── Active nav link on scroll ── */
+      const sections = document.querySelectorAll('section[id]');
+      const navLinks = document.querySelectorAll('.nav-center .nav-link');
+
+      function updateActiveNav() {
+        let current = '';
+        sections.forEach(sec => {
+          const top = sec.offsetTop - 120;
+          if (window.scrollY >= top) current = sec.id;
+        });
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+        });
+      }
+
+      window.addEventListener('scroll', updateActiveNav, { passive: true });
+
+      /* ── Reveal ── */
       const io = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -1139,13 +2038,14 @@
         if (!el.classList.contains('is-visible')) io.observe(el);
       });
 
+      /* ── Parallax orbital ── */
       const orbits = document.querySelectorAll('.shape, .ring');
       window.addEventListener('mousemove', (e) => {
         const x = (e.clientX / window.innerWidth - 0.5);
         const y = (e.clientY / window.innerHeight - 0.5);
         orbits.forEach((el, idx) => {
-          const factor = (idx % 4 + 1) * 4;
-          el.style.translate = `${x * factor}px ${y * factor}px`;
+          const f = (idx % 4 + 1) * 4;
+          el.style.translate = `${x * f}px ${y * f}px`;
         });
       }, { passive: true });
 
