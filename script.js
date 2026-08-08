@@ -1,6 +1,5 @@
 (() => {
   const releaseApi = 'https://api.github.com/repos/captainzeqi/Captain-Net-Releases/releases/latest';
-  const fallbackDownload = 'https://github.com/captainzeqi/Captain-Net-Releases/releases/download/v1.0.22/CaptainNet-v1.0.22.exe';
   const toast = document.querySelector('.download-toast');
   let timer;
   const wireDownloadLinks = () => document.querySelectorAll('[data-download]').forEach((link) => {
@@ -18,10 +17,9 @@
       const asset = (release.assets || []).find((item) => /^CaptainNet-v.*\.exe$/i.test(item.name));
       if (!asset) return;
       document.querySelectorAll('[data-download]').forEach((link) => { link.href = asset.browser_download_url; });
-      document.querySelectorAll('[data-version]').forEach((item) => { item.textContent = release.tag_name || item.textContent; });
     })
     .catch(() => {
-      document.querySelectorAll('[data-download]').forEach((link) => { link.href = fallbackDownload; });
+      document.querySelectorAll('[data-download]').forEach((link) => { link.href = 'https://github.com/captainzeqi/Captain-Net-Releases/releases/latest'; });
     });
 
   const reveal = new IntersectionObserver((entries) => {
