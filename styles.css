@@ -458,6 +458,11 @@ img { max-width: 100%; height: auto; }
 }
 .faq details[open] summary::after { transform: translateY(-50%) rotate(45deg); }
 .faq details p { color: var(--muted); font-size: 13.5px; max-width: 68ch; margin: 0 0 16px; }
+.faq details ul { color: var(--muted); font-size: 13.5px; max-width: 68ch; margin: 0 0 16px; padding-left: 18px; }
+.faq details li { margin-bottom: 9px; line-height: 1.7; }
+.faq details li::marker { color: var(--cyan); }
+.faq details li strong { color: var(--text); font-weight: 650; }
+.faq details li em { color: var(--cyan); font-style: normal; }
 
 /* ---------------------------------------------------------------- CTA / 页脚 */
 
