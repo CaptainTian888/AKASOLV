@@ -117,6 +117,7 @@ img { max-width: 100%; height: auto; }
 .brand img { width: 32px; height: 32px; border-radius: 10px; object-fit: cover; }
 
 .main-nav { display: flex; gap: clamp(18px, 3vw, 28px); margin-left: auto; }
+.main-nav ~ .icon-link { margin-left: 0; }
 .main-nav a { color: var(--muted); text-decoration: none; transition: color .18s var(--ease); }
 .main-nav a:hover { color: var(--cyan); }
 
@@ -131,6 +132,22 @@ img { max-width: 100%; height: auto; }
   transition: transform .18s var(--ease), box-shadow .18s var(--ease);
 }
 .nav-download:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(67, 216, 244, .22); }
+
+/* GitHub 仓库入口。放在下载按钮左边，图标用 currentColor 跟随主题色。 */
+.icon-link {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-left: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  background: rgba(16, 34, 56, .6);
+  transition: color .18s var(--ease), border-color .18s var(--ease), transform .18s var(--ease);
+}
+.icon-link + .nav-download { margin-left: 0; }
+.icon-link:hover { color: var(--cyan); border-color: #3e678b; transform: translateY(-1px); }
 
 /* 汉堡按钮只在窄屏出现 */
 .nav-toggle {
@@ -474,7 +491,14 @@ img { max-width: 100%; height: auto; }
 .footer-inner .brand img { width: 28px; height: 28px; }
 .footer-meta { margin: 0 auto 0 0; }
 .footer-publisher { margin: 0; color: #5d7290; }
-.footer-link { color: var(--muted); text-decoration: none; }
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color .18s var(--ease);
+}
 .footer-link:hover { color: var(--cyan); }
 
 .download-toast {
@@ -517,8 +541,9 @@ img { max-width: 100%; height: auto; }
   .hero-lead { max-width: none; }
 
   /* 窄屏用可展开的导航，而不是直接把入口藏掉 */
-  .nav-toggle { display: grid; order: 3; }
-  .nav-download { margin-left: auto; order: 2; }
+  .nav-toggle { display: grid; order: 4; }
+  .nav-download { margin-left: 0; order: 3; }
+  .icon-link { margin-left: auto; order: 2; }
   .main-nav {
     order: 4;
     position: absolute;
