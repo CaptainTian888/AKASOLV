@@ -80,4 +80,56 @@
       });
     }, 2000);
   }
+
+  /* ---------------------------------------------------------------- 反馈表单 */
+
+  // 表单本身是可以直接 POST 的，没有 JS 也能提交（会跳到 FormSubmit 的页面）。
+  // 这里接管一下改用它的 ajax 接口，用户留在原页，成功失败都就地提示。
+  const form = document.querySelector('.feedback-form');
+  if (form) {
+    const status = form.querySelector('.form-status');
+    const submit = form.querySelector('button[type="submit"]');
+    const endpoint = form.action.replace('formsubmit.co/', 'formsubmit.co/ajax/');
+
+    const say = (text, kind) => {
+      if (!status) return;
+      status.textContent = text;
+      status.classList.remove('ok', 'bad');
+      if (kind) status.classList.add(kind);
+    };
+
+    form.addEventListener('submit', async (event) => {
+      // 蜜罐被填说明是机器人，直接当作已提交，不真的发出去
+      if (form.elements._honey && form.elements._honey.value) {
+        event.preventDefault();
+        return;
+      }
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        form.reportValidity();
+        return;
+      }
+      event.preventDefault();
+
+      submit.disabled = true;
+      say('正在发送…');
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: new FormData(form)
+        });
+        if (!response.ok) throw new Error(response.status);
+        form.reset();
+        say('已收到，感谢反馈！需要回复的话我会发到你留的邮箱。', 'ok');
+      } catch {
+        // ajax 走不通就退回普通提交，别把用户的内容弄丢
+        say('发送失败，正在改用普通方式提交…', 'bad');
+        form.submit();
+        return;
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  }
 })();

@@ -477,6 +477,119 @@ img { max-width: 100%; height: auto; }
 .final-cta h2 { font-size: clamp(24px, 3.2vw, 34px); line-height: 1.18; letter-spacing: -.045em; margin: 0 0 8px; text-wrap: balance; }
 .final-cta p:last-child { color: var(--muted); margin: 0; }
 
+/* ---------------------------------------------------------------- 联系与反馈 */
+
+.contact { padding-bottom: clamp(70px, 9vw, 110px); }
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+  gap: clamp(20px, 3vw, 34px);
+  margin-top: clamp(28px, 4vw, 42px);
+  align-items: start;
+}
+
+.contact-side { display: flex; flex-direction: column; gap: 14px; }
+
+.contact-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(145deg, rgba(18, 36, 58, .9), rgba(10, 24, 40, .85));
+  color: var(--text);
+  text-decoration: none;
+  transition: transform .2s var(--ease), border-color .2s var(--ease), box-shadow .2s var(--ease);
+}
+.contact-card:hover { transform: translateY(-2px); border-color: #3e678b; box-shadow: 0 16px 34px rgba(0, 0, 0, .26); }
+
+.contact-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  background: rgba(67, 216, 244, .12);
+  color: var(--cyan);
+}
+.contact-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.contact-text strong { font-size: 15px; }
+.contact-text small { color: var(--muted); font-size: 12.5px; word-break: break-word; }
+
+.contact-note { margin: 4px 0 0; color: var(--faint); font-size: 12px; line-height: 1.6; }
+
+/* 反馈表单 */
+
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: clamp(20px, 3vw, 26px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(11, 25, 41, .78);
+}
+
+/* 蜜罐字段必须对人不可见、但对机器人可填，所以不能用 display:none */
+.feedback-form input[name="_honey"] {
+  position: absolute;
+  left: -9999px;
+  width: 1px; height: 1px;
+  opacity: 0;
+}
+
+.field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+.field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.field > span { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+.field > span i { color: var(--cyan); font-style: normal; }
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: #0b1a2b;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 13px;
+  transition: border-color .18s var(--ease), box-shadow .18s var(--ease);
+}
+.field textarea { resize: vertical; min-height: 118px; line-height: 1.6; }
+.field select { appearance: none; cursor: pointer; padding-right: 36px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+.field input::placeholder, .field textarea::placeholder { color: #5c7288; }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(67, 216, 244, .14);
+}
+.field input:user-invalid, .field textarea:user-invalid { border-color: #d96a6a; }
+
+.form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 2px; }
+.form-actions .button { border: 0; cursor: pointer; font-family: inherit; font-size: 15px; }
+.form-actions .button[disabled] { opacity: .6; cursor: default; transform: none; }
+
+.form-status { margin: 0; font-size: 12.5px; color: var(--muted); }
+.form-status.ok { color: var(--green); }
+.form-status.bad { color: #ef8a8a; }
+
+@media (max-width: 900px) {
+  .contact-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .field-row { grid-template-columns: minmax(0, 1fr); }
+  .form-actions .button { width: 100%; justify-content: center; }
+}
+
 .site-footer { border-top: 1px solid var(--line-soft); }
 .footer-inner {
   padding-block: 24px 34px;
