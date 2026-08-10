@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#08121f">
   <title>Captain Net · 本地网络工作台</title>
-  <meta name="description" content="Captain Net 是一款本地运行的 Windows 网络工具：网络测速、IP 与 DNS 检测、代理诊断，以及跨设备共享键鼠、剪贴板、文件与打印机。单文件便携版，检测结果不上传。">
+  <meta name="description" content="Captain Net 是一款本地运行的 Windows 网络工作台：网络测速、IP/DNS/WebRTC 检测、代理诊断，以及跨设备键鼠、文件传输、屏幕广播和局域网聊天。单文件便携版，记录只保存在本机。">
 
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
   <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
@@ -13,7 +13,7 @@
 
   <meta property="og:type" content="website">
   <meta property="og:title" content="Captain Net · 本地网络工作台">
-  <meta property="og:description" content="网络测速、IP 与 DNS 检测、代理诊断，以及跨设备共享键鼠、剪贴板、文件与打印机。单文件便携版，本地运行。">
+  <meta property="og:description" content="测速、IP/DNS/WebRTC 检测、代理诊断，以及跨设备键鼠、文件传输、屏幕广播和局域网聊天。单文件便携版，本地运行。">
   <meta property="og:image" content="assets/icon-512.png">
   <meta name="twitter:card" content="summary">
 
@@ -56,8 +56,8 @@
         <p class="eyebrow"><span class="status-dot"></span> Windows x64 · 单文件便携版</p>
         <h1>把网络状态，<em>看清楚</em>。</h1>
         <p class="hero-lead">
-          Captain Net 是一款本地运行的网络工作台。测速、IP、DNS、WebRTC、代理诊断集中在一个窗口，
-          还能让手边的几台电脑共用一套键盘鼠标、剪贴板、文件和打印机。
+          Captain Net 是一款本地运行的 Windows 网络工作台。测速、IP、DNS、WebRTC、代理诊断集中在一个窗口，
+          还能让手边的几台电脑共享键鼠、剪贴板、文件、屏幕和私密聊天。
         </p>
         <div class="hero-actions">
           <a class="button button-primary" data-download href="https://github.com/captainzeqi/Captain-Net-Releases/releases/latest">
@@ -87,6 +87,8 @@
             <i>⇄　网络连通</i>
             <i>⌘　DNS 泄露</i>
             <i>⇆　无界键鼠</i>
+            <i>◉　屏幕广播</i>
+            <i>✎　局域网聊天</i>
           </aside>
           <div class="dash-content">
             <div class="dash-heading">
@@ -115,9 +117,9 @@
     </section>
 
     <section class="proof-strip section-shell" aria-label="产品概览">
-      <div><strong>12</strong><span>检测与协同模块</span></div>
+      <div><strong>16</strong><span>检测与协同模块</span></div>
       <div><strong>48</strong><span>全球探测站点</span></div>
-      <div><strong>100%</strong><span>本地处理</span></div>
+      <div><strong>100%</strong><span>本地记录</span></div>
       <div><strong>1 次</strong><span>全量体检</span></div>
     </section>
 
@@ -185,6 +187,20 @@
         </article>
 
         <article class="feature-card">
+          <span class="feature-icon" aria-hidden="true">◉</span>
+          <h3>屏幕广播</h3>
+          <p>单独的屏幕广播页面支持勾选多台已配对设备并一键发起。每台接收设备都会弹出接受/拒绝邀请，发起者实时看到回应和收看状态。</p>
+          <p class="feature-tag">邀请 · 接受 · 实时画面</p>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-icon" aria-hidden="true">✎</span>
+          <h3>局域网聊天</h3>
+          <p>在已配对设备之间双向聊天，支持发送任意格式文件和文件夹。备注名、聊天记录和清空操作都只影响本机，不上传公网。</p>
+          <p class="feature-tag">文字 · 文件 · 本机记录</p>
+        </article>
+
+        <article class="feature-card">
           <span class="feature-icon" aria-hidden="true">▣</span>
           <h3>局域网打印机</h3>
           <p>在连着打印机的那台设备上开启共享，其他设备自动看到，上传文件即可提交打印，打印记录跨设备同步。</p>
@@ -203,7 +219,7 @@
           <li class="step"><b>01</b><h3>测速</h3><p>先看国内和海外两条链路各自跑多快、从哪出去。</p></li>
           <li class="step"><b>02</b><h3>体检</h3><p>选一个模块，或点一键全量体检，拿到可导出的报告。</p></li>
           <li class="step"><b>03</b><h3>优化</h3><p>按建议调整配置，改坏了随时一键还原。</p></li>
-          <li class="step"><b>04</b><h3>协同</h3><p>配对设备，开始共享键鼠、剪贴板、文件与打印机。</p></li>
+          <li class="step"><b>04</b><h3>协同</h3><p>配对设备，按需共享键鼠、剪贴板、文件、屏幕、聊天与打印机。</p></li>
         </ol>
       </div>
     </section>
@@ -228,7 +244,19 @@
         </details>
         <details>
           <summary>多台设备协同需要什么条件？</summary>
-          <p>设备处于同一局域网，互相配对（配对需双方确认），并升级到相同版本。发现使用 UDP 45678，传输使用 TCP 45679，键鼠低延迟输入使用 UDP 45679；若被防火墙拦截，请允许 Captain Net 访问本地网络。</p>
+          <p>设备处于同一局域网，互相配对（配对需双方确认），并升级到相同版本。发现使用 UDP 45678，协同/文件/聊天使用 TCP 45679，键鼠使用 UDP 45679，屏幕查看和广播使用 TCP 45680；若被防火墙拦截，请允许 Captain Net 访问专用网络。</p>
+        </details>
+        <details>
+          <summary>屏幕广播会自动让别人看到我的桌面吗？</summary>
+          <p>不会。广播发起后，每台接收设备都会单独弹出置顶邀请，必须点击“接受查看”才会开始画面传输；点“拒绝”不会查看。发起者可以随时结束广播，被查看端也能一键取消。</p>
+        </details>
+        <details>
+          <summary>聊天记录和发送的文件会上传到云端吗？</summary>
+          <p>不会。聊天记录、备注名和传输历史只保存到各自设备的本地 Captain Net 数据目录；聊天和文件只在已配对设备之间传输，不经过 Captain Net 云端。</p>
+        </details>
+        <details>
+          <summary>文件夹里的 EXE、压缩包等格式会被改坏吗？</summary>
+          <p>完整传输后会按原目录、原文件名和原扩展名还原。传输中使用隐藏临时分片目录，接收完成并校验长度后才生成正式文件名，因此不会把 .part 当成最终文件。</p>
         </details>
         <details>
           <summary>为什么打开某些应用时，鼠标无法跨设备控制？</summary>
