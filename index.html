@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#08121f">
   <title>Captain Net · 本地网络工作台</title>
-  <meta name="description" content="Captain Net 是一款本地运行的 Windows 网络工作台：网络测速、IP/DNS/WebRTC 检测、代理诊断，以及跨设备键鼠、文件传输、屏幕广播和局域网聊天。单文件便携版，记录只保存在本机。">
+  <meta name="description" content="Captain Net 是一款本地运行的 Windows 网络工作台：网络测速、IP/DNS/WebRTC 检测、代理诊断，以及跨设备键鼠、文件传输、屏幕广播、声音同步和端到端加密的局域网聊天。单文件便携版，记录只保存在本机。">
 
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
   <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
@@ -13,7 +13,7 @@
 
   <meta property="og:type" content="website">
   <meta property="og:title" content="Captain Net · 本地网络工作台">
-  <meta property="og:description" content="测速、IP/DNS/WebRTC 检测、代理诊断，以及跨设备键鼠、文件传输、屏幕广播和局域网聊天。单文件便携版，本地运行。">
+  <meta property="og:description" content="测速、IP/DNS/WebRTC 检测、代理诊断，以及跨设备键鼠、文件传输、屏幕广播、声音同步和加密聊天。单文件便携版，本地运行。">
   <meta property="og:image" content="assets/icon-512.png">
   <meta name="twitter:card" content="summary">
 
@@ -57,7 +57,7 @@
         <h1>把网络状态，<em>看清楚</em>。</h1>
         <p class="hero-lead">
           Captain Net 是一款本地运行的 Windows 网络工作台。测速、IP、DNS、WebRTC、代理诊断集中在一个窗口，
-          还能让手边的几台电脑共享键鼠、剪贴板、文件、屏幕和私密聊天。
+          还能让手边的几台电脑共享键鼠、剪贴板、文件、屏幕和声音，聊天全程端到端加密。
         </p>
         <div class="hero-actions">
           <a class="button button-primary" data-download href="https://github.com/captainzeqi/Captain-Net-Releases/releases/latest">
@@ -189,15 +189,43 @@
         <article class="feature-card">
           <span class="feature-icon" aria-hidden="true">◉</span>
           <h3>屏幕广播</h3>
-          <p>单独的屏幕广播页面支持勾选多台已配对设备并一键发起。每台接收设备都会弹出接受/拒绝邀请，发起者实时看到回应和收看状态。</p>
-          <p class="feature-tag">邀请 · 接受 · 实时画面</p>
+          <p>勾选多台已配对设备一键发起，可选是否同步扬声器声音。每台设备都会弹出接受/拒绝邀请，发起者实时看到谁在收看。广播过程中所有人可以在同一条评论区里留言。</p>
+          <p class="feature-tag">邀请 · 声音 · 评论</p>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-icon" aria-hidden="true">◈</span>
+          <h3>屏幕查看与授权</h3>
+          <p>想看别人的屏幕，得对方点头。授权框里「同步声音」和「允许控制键鼠」是两个独立勾选，默认都关。只授权查看的话，对方还能中途单独申请控制权，由你再确认一次。</p>
+          <p class="feature-tag">先授权 · 后查看</p>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-icon" aria-hidden="true">♪</span>
+          <h3>设备间声音同步</h3>
+          <p>每台设备各有一个共享开关。打开后，这台设备扬声器正在放的声音会实时同步到其余已配对设备，其它设备默认自动接上播放。播放端带抖动缓冲和延迟校正，网络波动后会主动追平，不会越听越滞后。</p>
+          <p class="feature-tag">实时 · 自动接收</p>
         </article>
 
         <article class="feature-card">
           <span class="feature-icon" aria-hidden="true">✎</span>
           <h3>局域网聊天</h3>
-          <p>在已配对设备之间双向聊天，支持发送任意格式文件和文件夹。备注名、聊天记录和清空操作都只影响本机，不上传公网。</p>
+          <p>已配对设备之间双向聊天，可发送任意格式的文件和文件夹，收到后直接打开、定位或另存为。设备备注名、聊天记录和清空操作都只作用于本机。</p>
           <p class="feature-tag">文字 · 文件 · 本机记录</p>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-icon" aria-hidden="true">⚿</span>
+          <h3>端到端加密</h3>
+          <p>聊天文本和文件正文在两台设备之间协商密钥后加密传输，密钥只存在内存里，不落盘也不经过任何服务器。同一局域网里的其他人抓到的只是密文。</p>
+          <p class="feature-tag">ECDH · AES-GCM</p>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-icon" aria-hidden="true">✚</span>
+          <h3>一键全量体检</h3>
+          <p>把测速、IP、DNS、WebRTC、连通性、全球 Ping 和服务状态串成一次完整检查，生成可复制、可导出的报告，方便存档或发给别人看。</p>
+          <p class="feature-tag">串联检测 · 导出报告</p>
         </article>
 
         <article class="feature-card">
@@ -219,7 +247,7 @@
           <li class="step"><b>01</b><h3>测速</h3><p>先看国内和海外两条链路各自跑多快、从哪出去。</p></li>
           <li class="step"><b>02</b><h3>体检</h3><p>选一个模块，或点一键全量体检，拿到可导出的报告。</p></li>
           <li class="step"><b>03</b><h3>优化</h3><p>按建议调整配置，改坏了随时一键还原。</p></li>
-          <li class="step"><b>04</b><h3>协同</h3><p>配对设备，按需共享键鼠、剪贴板、文件、屏幕、聊天与打印机。</p></li>
+          <li class="step"><b>04</b><h3>协同</h3><p>配对设备，按需共享键鼠、剪贴板、文件、屏幕、声音、聊天与打印机。</p></li>
         </ol>
       </div>
     </section>
@@ -249,6 +277,20 @@
         <details>
           <summary>屏幕广播会自动让别人看到我的桌面吗？</summary>
           <p>不会。广播发起后，每台接收设备都会单独弹出置顶邀请，必须点击“接受查看”才会开始画面传输；点“拒绝”不会查看。发起者可以随时结束广播，被查看端也能一键取消。</p>
+        </details>
+        <details>
+          <summary>别人可以直接查看或截取我的屏幕吗？</summary>
+          <p>不行。别人发起查看时，你这边会弹出授权框，不同意就连不上。授权框里“同步扬声器声音”和“允许对方控制键鼠”是两个独立勾选，默认都不开——只同意查看的话，对方只能看画面。对方想要控制权得中途再申请一次，由你二次确认。跨设备截图同样需要你当场同意。</p>
+          <p>只要屏幕正在被查看或广播，你的页面顶部会一直挂着共享提示，写明是否含声音、是否已交出键鼠控制，随时可以一键取消。</p>
+        </details>
+        <details>
+          <summary>为什么我开着声音共享时，听不到其它设备的声音？</summary>
+          <p>这是有意为之，避免回声。声音同步采集的是整台设备的扬声器输出，如果一边播放对方的声音、一边采集再发回去，两台设备就会互相喂声音、越叠越响。所以同一台设备上「共享」和「收听」是互斥的：谁开共享谁出声，其余设备听。关掉共享开关就会恢复接收。</p>
+        </details>
+        <details>
+          <summary>聊天和文件传输是加密的吗？</summary>
+          <p>是。聊天文本和文件正文会在两台设备之间协商出会话密钥后加密传输（ECDH 协商 + AES-GCM 加密），密钥只存在内存里，不落盘、不经过任何服务器，同一网络里的其他人抓包只能拿到密文。</p>
+          <p>需要说明的是：密钥协商没有和设备身份做绑定校验，所以它能防住「被偷看」，但挡不住能改写流量的主动中间人。建议仍然只在可信网络中使用局域网协同功能。</p>
         </details>
         <details>
           <summary>聊天记录和发送的文件会上传到云端吗？</summary>
