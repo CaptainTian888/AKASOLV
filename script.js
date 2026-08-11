@@ -25,7 +25,11 @@
   fetch(RELEASE_API, { headers: { Accept: 'application/vnd.github+json' } })
     .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
     .then((release) => {
-      const asset = (release.assets || []).find((item) => /^CaptainNet-v.*\.exe$/i.test(item.name));
+      // 改名成 Captain X 之前的资产叫 CaptainNet-v*.exe，两种都认，优先给新名字。
+      const assets = release.assets || [];
+      const asset =
+        assets.find((item) => /^CaptainX-v.*\.exe$/i.test(item.name)) ||
+        assets.find((item) => /^CaptainNet-v.*\.exe$/i.test(item.name));
       if (!asset) return;
       const size = asset.size ? ` · ${(asset.size / 1048576).toFixed(0)} MB` : '';
       downloadLinks().forEach((link) => {
