@@ -6,4 +6,4 @@
  *
  * 留空时下载按钮会明确告知"下载通道尚未开启"，而不是悄悄失败。
  */
-window.CAPTAINX_API_BASE = '';
+window.CAPTAINX_API_BASE = 'https://captainx-download.captainleontian.workers.dev';
