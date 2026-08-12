@@ -1,0 +1,14 @@
+name = "captainx-download"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+[vars]
+# 允许调用的站点。上线后改成自己的域名，别留 *，否则任何网站都能来调这个接口。
+ALLOW_ORIGIN = "*"
+# 安装包所在仓库。仓库转为私有时，另外配置 GITHUB_TOKEN 这个密钥。
+GITHUB_REPO = "captainzeqi/Captain-Net-Releases"
+
+# INVITE_SALT / ADMIN_KEY / GITHUB_TOKEN 属于密钥，不写在这个文件里，
+# 用命令单独设置：
+#   npx wrangler secret put INVITE_SALT
+#   npx wrangler secret put ADMIN_KEY

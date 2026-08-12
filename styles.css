@@ -117,11 +117,15 @@ img { max-width: 100%; height: auto; }
 .brand img { width: 32px; height: 32px; border-radius: 10px; object-fit: cover; }
 
 .main-nav { display: flex; gap: clamp(18px, 3vw, 28px); margin-left: auto; }
-.main-nav ~ .icon-link { margin-left: 0; }
 .main-nav a { color: var(--muted); text-decoration: none; transition: color .18s var(--ease); }
 .main-nav a:hover { color: var(--cyan); }
 
 .nav-download {
+  /* 这个入口现在是 <button>（点击打开邀请码弹窗），按钮的默认样式要抹掉 */
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
   color: #09121e;
   text-decoration: none;
   background: var(--cyan);
@@ -133,21 +137,6 @@ img { max-width: 100%; height: auto; }
 }
 .nav-download:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(67, 216, 244, .22); }
 
-/* GitHub 仓库入口。放在下载按钮左边，图标用 currentColor 跟随主题色。 */
-.icon-link {
-  display: inline-grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  margin-left: auto;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  color: var(--muted);
-  background: rgba(16, 34, 56, .6);
-  transition: color .18s var(--ease), border-color .18s var(--ease), transform .18s var(--ease);
-}
-.icon-link + .nav-download { margin-left: 0; }
-.icon-link:hover { color: var(--cyan); border-color: #3e678b; transform: translateY(-1px); }
 
 /* 汉堡按钮只在窄屏出现 */
 .nav-toggle {
@@ -661,8 +650,7 @@ img { max-width: 100%; height: auto; }
 
   /* 窄屏用可展开的导航，而不是直接把入口藏掉 */
   .nav-toggle { display: grid; order: 4; }
-  .nav-download { margin-left: 0; order: 3; }
-  .icon-link { margin-left: auto; order: 2; }
+  .nav-download { margin-left: auto; order: 2; }
   .main-nav {
     order: 4;
     position: absolute;
@@ -727,4 +715,85 @@ img { max-width: 100%; height: auto; }
   }
   .reveal { opacity: 1; transform: none; }
   .button:hover, .feature-card:hover, .nav-download:hover { transform: none; }
+}
+
+/* ============================ 邀请码下载弹窗 ============================
+   真正的校验在服务端，这里只负责收集输入和展示结果。 */
+
+.invite-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: var(--pad);
+  background: rgba(4, 10, 18, .72);
+  backdrop-filter: blur(6px);
+}
+.invite-mask[hidden] { display: none; }
+body.invite-open { overflow: hidden; }
+
+.invite-card {
+  position: relative;
+  width: min(420px, 100%);
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: clamp(22px, 4vw, 30px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+}
+.invite-card h3 { margin: 6px 0 10px; font-size: clamp(20px, 3vw, 24px); }
+.invite-lead { margin: 0 0 18px; color: var(--muted); line-height: 1.7; }
+
+.invite-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--faint);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .2s var(--ease), color .2s var(--ease);
+}
+.invite-close:hover { background: rgba(127, 163, 203, .12); color: var(--text); }
+
+.invite-form { display: grid; gap: 10px; }
+
+.invite-input {
+  width: 100%;
+  padding: 13px 15px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(8, 18, 31, .75);
+  color: var(--text);
+  font-size: 17px;
+  /* 邀请码是一串要照着抄的字符，等宽加字距最不容易看错 */
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
+}
+.invite-input::placeholder { letter-spacing: normal; text-transform: none; color: var(--faint); }
+.invite-input:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(67, 216, 244, .16);
+}
+
+.invite-submit { width: 100%; justify-content: center; }
+.invite-submit:disabled { opacity: .6; cursor: default; }
+
+.invite-status { margin: 12px 0 0; min-height: 1.4em; font-size: 14px; line-height: 1.6; }
+.invite-status.bad { color: #ff9c8f; }
+.invite-status.good { color: var(--green); }
+
+.invite-foot { margin: 14px 0 0; color: var(--faint); font-size: 13px; line-height: 1.6; }
+
+@media (prefers-reduced-motion: reduce) {
+  .invite-close, .invite-input { transition: none; }
 }

@@ -40,9 +40,8 @@
         <a href="#contact">联系</a>
       </nav>
 
-      <a class="icon-link" href="https://github.com/captainzeqi/Captain-Net-Releases" target="_blank" rel="noopener" aria-label="在 GitHub 上查看 Captain X" title="GitHub 仓库"><svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
 
-      <a class="nav-download" data-download href="https://github.com/captainzeqi/Captain-Net-Releases/releases/latest">下载</a>
+      <button class="nav-download" type="button" data-download>下载</button>
 
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="展开导航">
         <span></span><span></span>
@@ -60,9 +59,9 @@
           还能让手边的几台电脑共享键鼠、剪贴板、文件、屏幕和声音，聊天全程端到端加密。
         </p>
         <div class="hero-actions">
-          <a class="button button-primary" data-download href="https://github.com/captainzeqi/Captain-Net-Releases/releases/latest">
+          <button class="button button-primary" type="button" data-download>
             一键下载 EXE <span aria-hidden="true">↓</span>
-          </a>
+          </button>
           <a class="button button-secondary" href="#features">了解全部功能</a>
         </div>
         <ul class="trust-row">
@@ -319,9 +318,9 @@
         <h2>让每一次网络连接，<em>都更有把握。</em></h2>
         <p>下载 Captain X，开始你的本地网络体检。</p>
       </div>
-      <a class="button button-primary" data-download href="https://github.com/captainzeqi/Captain-Net-Releases/releases/latest">
+      <button class="button button-primary" type="button" data-download>
         下载 Captain X <span aria-hidden="true">↓</span>
-      </a>
+      </button>
     </section>
 
     <section id="contact" class="section-shell contact">
@@ -413,9 +412,25 @@
       </a>
       <p class="footer-meta">Windows x64 · 本地运行 · 无遥测</p>
       <p class="footer-publisher">SHINEVISTA GLOBAL GROUP LIMITED (HK)</p>
-      <a class="footer-link" href="https://github.com/captainzeqi/Captain-Net-Releases" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg><span>GitHub 仓库</span></a>
     </div>
   </footer>
+
+  <!-- 邀请码校验。真正的判定在服务端，这里只负责收集和展示结果。 -->
+  <div class="invite-mask" hidden>
+    <div class="invite-card" role="dialog" aria-modal="true" aria-labelledby="invite-title">
+      <button class="invite-close" type="button" aria-label="关闭">×</button>
+      <p class="eyebrow">INVITE ONLY</p>
+      <h3 id="invite-title">输入邀请码下载</h3>
+      <p class="invite-lead">Captain X 目前仅向持有邀请码的用户开放下载。邀请码每天更新一次。</p>
+      <form class="invite-form" autocomplete="off">
+        <input class="invite-input" type="text" name="code" inputmode="latin" spellcheck="false"
+               maxlength="16" placeholder="请输入邀请码" aria-label="邀请码">
+        <button class="button button-primary invite-submit" type="submit">验证并下载</button>
+      </form>
+      <p class="invite-status" role="status" aria-live="polite"></p>
+      <p class="invite-foot">没有邀请码？到页面底部的联系方式向作者索取。</p>
+    </div>
+  </div>
 
   <div class="download-toast" role="status" aria-live="polite">开始下载 Captain X…</div>
   <script src="script.js" defer></script>

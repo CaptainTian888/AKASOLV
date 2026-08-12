@@ -1,47 +1,105 @@
 (() => {
   'use strict';
 
-  const RELEASE_API = 'https://api.github.com/repos/captainzeqi/Captain-Net-Releases/releases/latest';
-  const RELEASE_PAGE = 'https://github.com/captainzeqi/Captain-Net-Releases/releases/latest';
-  const downloadLinks = () => document.querySelectorAll('[data-download]');
+  // 校验服务地址。部署 worker/ 目录后把这里换成 wrangler 输出的地址。
+  // 留空时下载按钮会明确告知"下载通道尚未开启"，而不是悄悄失败。
+  const API_BASE = '';
 
-  /* ---------------------------------------------------------------- 下载提示 */
+  const downloadButtons = () => document.querySelectorAll('[data-download]');
 
+  /* ---------------------------------------------------------------- 版本信息 */
+
+  // 只取版本号和体积，不取下载地址：下载地址必须凭邀请码换取。
+  if (API_BASE) {
+    fetch(`${API_BASE}/api/latest`)
+      .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
+      .then((info) => {
+        const size = info.size ? ` · ${(info.size / 1048576).toFixed(0)} MB` : '';
+        const label = `${info.version || ''}${size}`.trim();
+        if (label) downloadButtons().forEach((button) => { button.title = label; });
+      })
+      .catch(() => { /* 拿不到版本信息不影响下载流程，静默即可 */ });
+  }
+
+  /* ---------------------------------------------------------------- 邀请码 */
+
+  const inviteMask = document.querySelector('.invite-mask');
+  const inviteForm = document.querySelector('.invite-form');
+  const inviteInput = document.querySelector('.invite-input');
+  const inviteSubmit = document.querySelector('.invite-submit');
+  const inviteStatus = document.querySelector('.invite-status');
   const toast = document.querySelector('.download-toast');
   let toastTimer;
-  downloadLinks().forEach((link) => {
-    link.addEventListener('click', () => {
-      if (!toast) return;
-      toast.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+
+  const setStatus = (text, kind) => {
+    if (!inviteStatus) return;
+    inviteStatus.textContent = text || '';
+    inviteStatus.className = `invite-status${kind ? ' ' + kind : ''}`;
+  };
+
+  const openInvite = () => {
+    if (!inviteMask) return;
+    inviteMask.hidden = false;
+    document.body.classList.add('invite-open');
+    setStatus('');
+    if (inviteInput) { inviteInput.value = ''; inviteInput.focus(); }
+  };
+
+  const closeInvite = () => {
+    if (!inviteMask) return;
+    inviteMask.hidden = true;
+    document.body.classList.remove('invite-open');
+  };
+
+  downloadButtons().forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      openInvite();
     });
   });
 
-  /* ---------------------------------------------------------------- 取最新版本 */
+  document.querySelector('.invite-close')?.addEventListener('click', closeInvite);
+  inviteMask?.addEventListener('click', (event) => { if (event.target === inviteMask) closeInvite(); });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && inviteMask && !inviteMask.hidden) closeInvite();
+  });
 
-  // 拿到最新 Release 的资产就直接指向它，取不到就退回发布页，
-  // 无论如何按钮都是可点的，不会出现点了没反应。
-  fetch(RELEASE_API, { headers: { Accept: 'application/vnd.github+json' } })
-    .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
-    .then((release) => {
-      // 改名成 Captain X 之前的资产叫 CaptainNet-v*.exe，两种都认，优先给新名字。
-      const assets = release.assets || [];
-      const asset =
-        assets.find((item) => /^CaptainX-v.*\.exe$/i.test(item.name)) ||
-        assets.find((item) => /^CaptainNet-v.*\.exe$/i.test(item.name));
-      if (!asset) return;
-      const size = asset.size ? ` · ${(asset.size / 1048576).toFixed(0)} MB` : '';
-      downloadLinks().forEach((link) => {
-        link.href = asset.browser_download_url;
-        link.title = `${release.tag_name || ''}${size}`.trim();
+  inviteForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const code = (inviteInput?.value || '').trim();
+    if (!code) { setStatus('请先填写邀请码。', 'bad'); return; }
+    if (!API_BASE) { setStatus('下载通道尚未开启，请稍后再来，或联系作者获取安装包。', 'bad'); return; }
+
+    if (inviteSubmit) { inviteSubmit.disabled = true; inviteSubmit.textContent = '正在验证…'; }
+    setStatus('');
+    try {
+      const response = await fetch(`${API_BASE}/api/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
       });
-    })
-    .catch(() => {
-      downloadLinks().forEach((link) => { link.href = RELEASE_PAGE; });
-    });
+      const result = await response.json().catch(() => ({}));
+      if (!result.ok) {
+        setStatus(result.error === 'empty' ? '请先填写邀请码。' : '邀请码不正确，或已经过期。请确认后重试。', 'bad');
+        return;
+      }
+      setStatus('验证通过，开始下载。', 'good');
+      if (toast) {
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+      }
+      // 下载走本站接口，浏览器看到的始终是本站域名。
+      window.location.href = `${API_BASE}/api/download?t=${encodeURIComponent(result.ticket)}`;
+      setTimeout(closeInvite, 1200);
+    } catch {
+      setStatus('网络不通，暂时无法验证。请检查网络后重试。', 'bad');
+    } finally {
+      if (inviteSubmit) { inviteSubmit.disabled = false; inviteSubmit.textContent = '验证并下载'; }
+    }
+  });
 
-  /* ---------------------------------------------------------------- 窄屏导航 */
+/* ---------------------------------------------------------------- 窄屏导航 */
 
   const toggle = document.querySelector('.nav-toggle');
   const nav = document.getElementById('main-nav');

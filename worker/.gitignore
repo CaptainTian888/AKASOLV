@@ -1,0 +1,3 @@
+# wrangler 的本地构建产物和状态，不该进仓库
+.wrangler/
+node_modules/
