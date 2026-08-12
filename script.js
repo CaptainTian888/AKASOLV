@@ -20,6 +20,37 @@
       .catch(() => { /* 拿不到版本信息不影响下载流程，静默即可 */ });
   }
 
+  /* ---------------------------------------------------------------- 今日额度 */
+
+  // 首页显示今天还能下载多少份。后台一改上限，这里刷新就跟着变。
+  const quotaNodes = () => document.querySelectorAll('[data-quota]');
+  let quotaExhausted = false;
+
+  const renderQuota = (quota) => {
+    quotaExhausted = Boolean(quota && quota.enabled && quota.remaining <= 0);
+    quotaNodes().forEach((node) => {
+      // 没限量就整块藏起来：显示"今日剩余 无限"只是噪音
+      if (!quota || !quota.enabled) { node.hidden = true; return; }
+      node.hidden = false;
+      node.textContent = quota.remaining > 0
+        ? `今日名额 ${quota.remaining} / ${quota.limit} 份`
+        : `今日 ${quota.limit} 份名额已发完，明天再来`;
+      node.classList.toggle('is-empty', quota.remaining <= 0);
+    });
+  };
+
+  const loadQuota = () => {
+    if (!API_BASE) return Promise.resolve();
+    return fetch(`${API_BASE}/api/quota`, { cache: 'no-store' })
+      .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
+      .then(renderQuota)
+      .catch(() => { /* 拿不到额度就不显示，不影响下载流程 */ });
+  };
+
+  loadQuota();
+  // 回到这个标签页时再取一次：可能已经过了零点，或者名额被别人用掉了
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) loadQuota(); });
+
   /* ---------------------------------------------------------------- 邀请码 */
 
   const inviteMask = document.querySelector('.invite-mask');
@@ -40,8 +71,9 @@
     if (!inviteMask) return;
     inviteMask.hidden = false;
     document.body.classList.add('invite-open');
-    setStatus('');
+    setStatus(quotaExhausted ? '今天的名额已经发完了，明天再来。' : '');
     if (inviteInput) { inviteInput.value = ''; inviteInput.focus(); }
+    loadQuota();   // 弹窗打开的这一刻是最需要数字准确的时候
   };
 
   const closeInvite = () => {
@@ -79,9 +111,15 @@
       });
       const result = await response.json().catch(() => ({}));
       if (!result.ok) {
-        setStatus(result.error === 'empty' ? '请先填写邀请码。' : '邀请码不正确，或已经过期。请确认后重试。', 'bad');
+        if (result.error === 'empty') setStatus('请先填写邀请码。', 'bad');
+        else if (result.error === 'quota_exhausted') {
+          // 码是对的，只是名额没了——别让人以为自己抄错了码
+          setStatus(`今天的 ${result.limit} 份名额已经发完了，明天再来。`, 'bad');
+          renderQuota(result);
+        } else setStatus('邀请码不正确，或已经过期。请确认后重试。', 'bad');
         return;
       }
+      if (result.quota) renderQuota(result.quota);
       setStatus('验证通过，开始下载。', 'good');
       if (toast) {
         toast.classList.add('show');
@@ -91,6 +129,8 @@
       // 下载走本站接口，浏览器看到的始终是本站域名。
       window.location.href = `${API_BASE}/api/download?t=${encodeURIComponent(result.ticket)}`;
       setTimeout(closeInvite, 1200);
+      // 计数是下载真正开始时才 +1 的，等一会儿再取才拿得到新数字
+      setTimeout(loadQuota, 4000);
     } catch {
       setStatus('网络不通，暂时无法验证。请检查网络后重试。', 'bad');
     } finally {

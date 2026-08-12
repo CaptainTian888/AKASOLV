@@ -17,13 +17,23 @@
   const list = document.querySelector('.code-list');
   const range = document.querySelector('.admin-range');
 
-  let token = sessionStorage.getItem(STORE_KEY) || '';
-  let canRotate = false;
+  const quotaForm = document.querySelector('.quota-form');
+  const quotaInput = document.querySelector('.quota-input');
+  const quotaSave = document.querySelector('.quota-save');
+  const quotaStatus = document.querySelector('.quota-status');
+  const quotaUsed = document.querySelector('.quota-used');
+  const quotaOf = document.querySelector('.quota-of');
+  const quotaFill = document.querySelector('.quota-fill');
 
+  let token = sessionStorage.getItem(STORE_KEY) || '';
+  let hasKv = false;
+
+  // 记下每个状态行原本的 class，加 good/bad 时才不会把它自己的类洗掉。
   const say = (node, text, kind) => {
     if (!node) return;
+    if (node.dataset.base === undefined) node.dataset.base = node.className;
     node.textContent = text || '';
-    node.className = `${node.classList.contains('admin-codes-status') ? 'admin-status admin-codes-status' : 'admin-status'}${kind ? ' ' + kind : ''}`;
+    node.className = `${node.dataset.base}${kind ? ' ' + kind : ''}`;
   };
 
   const showCodes = (on) => {
@@ -132,7 +142,7 @@
         row.append(mark);
       }
 
-      if (canRotate) {
+      if (hasKv) {
         const rotate = document.createElement('button');
         rotate.type = 'button';
         rotate.className = 'admin-button admin-ghost code-rotate';
@@ -168,13 +178,65 @@
       if (response.status === 401) { signOut('登录已过期，请重新登录。'); return; }
       const result = await response.json().catch(() => ({}));
       if (!Array.isArray(result.codes)) { say(codesStatus, '读取失败，稍后再试。', 'bad'); return; }
-      canRotate = Boolean(result.canRotate);
+      hasKv = Boolean(result.hasKv);
       render(result.codes);
-      say(codesStatus, canRotate ? '' : '没有绑定 KV，无法手动换码——码仍然每天自动更换。');
+      renderQuota(result.quota);
+      say(codesStatus, hasKv ? '' : '没有绑定 KV，无法手动换码——码仍然每天自动更换。');
     } catch {
       say(codesStatus, '连不上校验服务。', 'bad');
     }
   }
+
+  /* ------------------------------------------------------------------ 下载额度 */
+
+  const renderQuota = (quota) => {
+    if (!quota) return;
+    const limited = quota.limit > 0;
+
+    if (quotaUsed) quotaUsed.textContent = String(quota.used);
+    if (quotaOf) quotaOf.textContent = limited ? ` / ${quota.limit} 份，剩 ${quota.remaining} 份` : ' 份（未限量）';
+    if (quotaFill) {
+      const pct = limited ? Math.min(100, Math.round((quota.used / quota.limit) * 100)) : 0;
+      quotaFill.style.width = `${pct}%`;
+      quotaFill.className = `quota-fill${limited && quota.remaining <= 0 ? ' is-full' : ''}`;
+    }
+    // 只在没聚焦时回填，免得把正在输入的数字冲掉
+    if (quotaInput && document.activeElement !== quotaInput) quotaInput.value = quota.limit || 0;
+    if (quotaForm) quotaForm.hidden = !hasKv;
+    if (!hasKv) say(quotaStatus, '没有绑定 KV，无法限量也无法计数。', 'bad');
+  };
+
+  const pushQuota = async (payload, note) => {
+    if (quotaSave) quotaSave.disabled = true;
+    say(quotaStatus, '正在保存…');
+    try {
+      const response = await api('/api/admin/quota', { method: 'POST', body: JSON.stringify(payload) });
+      if (response.status === 401) { signOut('登录已过期，请重新登录。'); return; }
+      const result = await response.json().catch(() => ({}));
+      if (!result.ok) {
+        say(quotaStatus, result.error === 'no_kv' ? '没有绑定 KV，无法限量。' : '保存失败，检查填的数字。', 'bad');
+        return;
+      }
+      renderQuota(result);
+      say(quotaStatus, note, 'good');
+    } catch {
+      say(quotaStatus, '连不上校验服务。', 'bad');
+    } finally {
+      if (quotaSave) quotaSave.disabled = false;
+    }
+  };
+
+  quotaForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const limit = Number(quotaInput?.value);
+    if (!Number.isFinite(limit) || limit < 0) { say(quotaStatus, '填一个不小于 0 的整数。', 'bad'); return; }
+    pushQuota({ limit }, limit > 0 ? `已设为每天 ${Math.floor(limit)} 份。` : '已改为不限量。');
+  });
+
+  document.querySelector('.quota-reset')?.addEventListener('click', () => {
+    if (!confirm('把今天已下载的计数清零？名额会重新放开。')) return;
+    pushQuota({ resetToday: true }, '今日计数已清零。');
+  });
 
   document.querySelector('.admin-refresh')?.addEventListener('click', loadCodes);
   range?.addEventListener('change', loadCodes);

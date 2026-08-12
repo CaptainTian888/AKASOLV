@@ -98,7 +98,59 @@ body {
   margin-bottom: 18px;
 }
 
-.admin-days { margin-right: auto; color: var(--ink-soft); font-size: 13px; }
+.admin-days { margin-left: auto; color: var(--ink-soft); font-size: 13px; }
+
+.admin-h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.admin-panel + .admin-panel { margin-top: 16px; }
+
+/* ---------------------------------------------------------------- 下载额度 */
+
+.admin-quota .admin-h2 { margin-bottom: 10px; }
+
+.quota-figure { margin: 0 0 10px; color: var(--ink-soft); font-size: 14px; }
+.quota-used { font-size: 30px; font-weight: 600; color: var(--ink); letter-spacing: -.01em; }
+.quota-of { margin-left: 6px; }
+
+.quota-bar {
+  height: 6px;
+  margin-bottom: 18px;
+  border-radius: 999px;
+  background: #0a1626;
+  overflow: hidden;
+}
+
+.quota-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width .3s ease;
+}
+
+.quota-fill.is-full { background: var(--bad); }
+
+.quota-form { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 10px; }
+.quota-form label { display: grid; gap: 6px; }
+.quota-form span { color: var(--ink-soft); font-size: 13px; }
+
+.quota-form input {
+  width: 120px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #0a1626;
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.quota-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(77, 163, 255, .16);
+}
+
+.quota-status { margin-top: 10px; }
 
 .admin-range {
   margin-left: 6px;

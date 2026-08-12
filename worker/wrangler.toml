@@ -7,8 +7,8 @@ compatibility_date = "2024-11-01"
 ALLOW_ORIGIN = "*"
 # 安装包所在仓库。仓库转为私有时，另外配置 GITHUB_TOKEN 这个密钥。
 GITHUB_REPO = "captainzeqi/Captain-Net-Releases"
-# 后台账号。密码是密钥，不写在这里。
-ADMIN_USER = "admin"
+# 后台账号。密码是密钥，绝不写在这里——这个文件会进 git。
+ADMIN_USER = "Captain"
 
 # INVITE_SALT / ADMIN_PASSWORD / ADMIN_KEY / GITHUB_TOKEN 属于密钥，
 # 不写在这个文件里（它会进 git），用命令单独设置：

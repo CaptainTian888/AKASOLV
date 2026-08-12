@@ -469,6 +469,30 @@ img { max-width: 100%; height: auto; }
   background: radial-gradient(circle at 80% 30%, rgba(67, 216, 244, .14), transparent 40%), #0d2135;
 }
 .final-cta-copy { min-width: 0; }
+.final-cta-action { display: grid; gap: 10px; justify-items: center; }
+
+/* 今日名额。没限量时脚本会整块隐藏，这里不必考虑空文本的情况。 */
+.quota-line,
+.final-cta .quota-line {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  letter-spacing: .01em;
+}
+.quota-line::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  vertical-align: middle;
+}
+.quota-line.is-empty { color: #ff9b9b; }
+.quota-line.is-empty::before { background: #ff6b6b; }
+.hero .quota-line { margin: -6px 0 18px; }
+.invite-quota { margin: -8px 0 16px; }
 .final-cta h2 { font-size: clamp(24px, 3.2vw, 34px); line-height: 1.18; letter-spacing: -.045em; margin: 0 0 8px; text-wrap: balance; }
 .final-cta p:last-child { color: var(--muted); margin: 0; }
 

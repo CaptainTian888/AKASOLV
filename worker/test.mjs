@@ -1,7 +1,7 @@
 /**
- * Worker 自测。直接调用 worker.js 导出的 fetch，不需要起服务。
+ * Worker 自测。直接调用 worker.js 导出的 fetch，不需要起服务，也不联网。
  *   node worker/test.mjs
- * 只测校验逻辑，不碰 GitHub（/api/latest、/api/download 的上游部分不在范围内）。
+ * GitHub 和 KV 都用假的顶上，所以跑多少遍都不会真的去拉安装包。
  */
 import worker from './worker.js';
 import { createHash } from 'node:crypto';
@@ -15,7 +15,27 @@ const env = {
   ALLOW_ORIGIN: '*'
 };
 
-/** 内存版 KV，够覆盖 rot:/fail: 两种用法。 */
+/**
+ * 把 GitHub 换成假的。
+ * 不这么做的话跑一次测试就会真的去拉一个 150MB 的安装包，慢、费流量，
+ * 而且断网时测试会以一个和逻辑无关的理由失败。
+ */
+const realFetch = globalThis.fetch;
+globalThis.fetch = async (input, init) => {
+  const url = typeof input === 'string' ? input : input.url;
+  if (url.startsWith('https://api.github.com/repos/') && url.endsWith('/releases/latest')) {
+    return new Response(JSON.stringify({
+      tag_name: 'v1.0.67',
+      published_at: '2026-08-01T00:00:00Z',
+      assets: [{ name: 'CaptainX-v1.0.67.exe', size: 152043520, id: 1, browser_download_url: 'https://asset.invalid/CaptainX.exe' }]
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }
+  if (url.startsWith('https://asset.invalid/'))
+    return new Response('FAKE-EXE', { status: 200, headers: { 'content-length': '8' } });
+  return realFetch(input, init);
+};
+
+/** 内存版 KV，够覆盖 rot:/fail:/dl:/cfg: 几种用法。 */
 function memoryKv() {
   const map = new Map();
   return {
@@ -73,7 +93,10 @@ console.log('\n邀请码校验');
 console.log('\n下载票');
 {
   const ticket = (await (await post('/api/verify', { code: today })).json()).ticket;
-  check('票据本身可用', await verifyOk(`/api/download?t=${encodeURIComponent(ticket)}`), true);
+  const ok = await call(`/api/download?t=${encodeURIComponent(ticket)}`);
+  check('票据可以换到安装包', ok.status, 200);
+  check('作为附件下发', ok.headers.get('Content-Disposition'), 'attachment; filename="CaptainX-v1.0.67.exe"');
+  check('内容确实转发出来了', await ok.text(), 'FAKE-EXE');
   check('没有票被拒', (await call('/api/download')).status, 403);
   check('伪造的票被拒', (await call('/api/download?t=999999999999999.abcdef')).status, 403);
   check('过期的票被拒', (await call(`/api/download?t=${Date.now() - 1000}.abcdef`)).status, 403);
@@ -116,7 +139,7 @@ console.log('\n后台查码');
   const listed = await (await call('/api/admin/codes?days=7', auth)).json();
   check('返回七天', listed.codes.length, 7);
   check('第一条是今天的码', listed.codes[0], { date: dateKey(0), code: today, rotation: 0 });
-  check('没绑 KV 时不能换码', listed.canRotate, false);
+  check('没绑 KV 时不能换码', listed.hasKv, false);
   check('days 超上限被夹住', (await (await call('/api/admin/codes?days=999', auth)).json()).codes.length, 31);
   check('/api/today 口令错被拒', (await call('/api/today?key=wrong')).status, 403);
   check('/api/today 口令对可查',
@@ -129,7 +152,7 @@ console.log('\n换一组邀请码');
   const token = (await (await post('/api/admin/login', { user: 'boss', password: env.ADMIN_PASSWORD }, {}, kvEnv)).json()).token;
   const auth = { headers: { Authorization: `Bearer ${token}` } };
 
-  check('绑了 KV 就能换码', (await (await call('/api/admin/codes', auth, kvEnv)).json()).canRotate, true);
+  check('绑了 KV 就能换码', (await (await call('/api/admin/codes', auth, kvEnv)).json()).hasKv, true);
   check('没有票不能换码', (await post('/api/admin/rotate', {}, {}, kvEnv)).status, 401);
 
   const rotated = await (await post('/api/admin/rotate', {}, auth, kvEnv)).json();
@@ -146,6 +169,62 @@ console.log('\n换一组邀请码');
     (await (await post('/api/admin/rotate', { date: dateKey(3) }, auth, kvEnv)).json()).code, expectCode(3, 1));
 }
 
+console.log('\n每日下载额度');
+{
+  const kvEnv = { ...env, INVITE_KV: memoryKv() };
+  const token = (await (await post('/api/admin/login', { user: 'boss', password: env.ADMIN_PASSWORD }, {}, kvEnv)).json()).token;
+  const auth = { headers: { Authorization: `Bearer ${token}` } };
+  const quota = async (e = kvEnv) => (await call('/api/quota', {}, e)).json();
+
+  check('默认不限量', (await quota()).enabled, false);
+  check('没绑 KV 时也是不限量', (await quota(env)).enabled, false);
+  check('没有票不能改上限', (await post('/api/admin/quota', { limit: 5 }, {}, kvEnv)).status, 401);
+  check('没绑 KV 时改不了上限', (await post('/api/admin/quota', { limit: 5 }, auth, env)).status, 501);
+  check('负数被拒', (await post('/api/admin/quota', { limit: -1 }, auth, kvEnv)).status, 400);
+  check('非数字被拒', (await post('/api/admin/quota', { limit: 'abc' }, auth, kvEnv)).status, 400);
+
+  const saved = await (await post('/api/admin/quota', { limit: 2 }, auth, kvEnv)).json();
+  check('上限保存后即时生效', [saved.limit, saved.remaining, saved.enabled], [2, 2, true]);
+  check('前台能看到同一个数', (await quota()).remaining, 2);
+
+  // 走两遍完整流程：验码 → 拿票 → 下载。下载真正开始时计数才 +1。
+  const download = async () => {
+    const ticket = (await (await post('/api/verify', { code: today }, {}, kvEnv)).json()).ticket;
+    if (!ticket) return null;
+    return call(`/api/download?t=${encodeURIComponent(ticket)}`, {}, kvEnv);
+  };
+
+  await download();
+  check('下载一次后计数 +1', (await quota()).used, 1);
+  await download();
+  check('第二次之后名额归零', (await quota()).remaining, 0);
+
+  const refused = await (await post('/api/verify', { code: today }, {}, kvEnv)).json();
+  check('名额用完时正确的码也不发票', [refused.ok, refused.error], [false, 'quota_exhausted']);
+
+  // 名额发完之前签出的票，也不能再兑现
+  check('用完后旧票也被挡', (await download()) === null, true);
+
+  const bumped = await (await post('/api/admin/quota', { limit: 5 }, auth, kvEnv)).json();
+  check('调高上限后立刻放开', [bumped.used, bumped.remaining], [2, 3]);
+  check('调高后又能发票', (await (await post('/api/verify', { code: today }, {}, kvEnv)).json()).ok, true);
+
+  const cleared = await (await post('/api/admin/quota', { resetToday: true }, auth, kvEnv)).json();
+  check('清零今日计数', [cleared.used, cleared.remaining], [0, 5]);
+
+  const unlimited = await (await post('/api/admin/quota', { limit: 0 }, auth, kvEnv)).json();
+  check('改回 0 就是不限量', [unlimited.enabled, unlimited.remaining], [false, null]);
+  check('不限量时不再拦截', (await (await post('/api/verify', { code: today }, {}, kvEnv)).json()).ok, true);
+}
+
+console.log('\n版本信息');
+{
+  const latest = await (await call('/api/latest')).json();
+  check('返回版本号和体积', [latest.version, latest.size], ['v1.0.67', 152043520]);
+  // 这个接口不需要邀请码就能调，所以它绝不能带出下载地址
+  check('不含任何下载地址', JSON.stringify(latest).includes('http'), false);
+}
+
 console.log('\n其它');
 {
   check('未知路径 404', (await call('/nope')).status, 404);
@@ -154,11 +233,6 @@ console.log('\n其它');
     (await call('/api/verify', { method: 'OPTIONS' })).headers.get('Access-Control-Allow-Origin'), '*');
 }
 
-/** /api/download 过了票据校验后会去打 GitHub，这里只关心有没有卡在 403。 */
-async function verifyOk(path) {
-  const response = await call(path);
-  return response.status !== 403;
-}
 
 console.log(`\n通过 ${passed}，失败 ${failed}\n`);
 process.exit(failed ? 1 : 0);

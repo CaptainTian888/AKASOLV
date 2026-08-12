@@ -8,14 +8,17 @@
 
 ```bash
 cd worker
-npx wrangler login                    # 浏览器里授权一次
-npx wrangler secret put INVITE_SALT   # 随便一串长口令，越长越好
-npx wrangler secret put ADMIN_PASSWORD # 后台密码，用长一点的
-npx wrangler secret put ADMIN_KEY      # 可选，命令行快捷查询用
+npx wrangler login                       # 浏览器里授权一次
+npx wrangler secret put INVITE_SALT      # 随便一串长口令，越长越好
+npx wrangler secret put ADMIN_PASSWORD   # 后台密码
+npx wrangler secret put ADMIN_KEY        # 可选，命令行快捷查询用
+npx wrangler kv namespace create INVITE_KV   # 要限量就得建，见下
 npx wrangler deploy
 ```
 
-账号名在 `wrangler.toml` 里，默认 `admin`，改成别的更好。
+后台账号名在 `wrangler.toml` 里，已设为 `Captain`。密码是密钥，只在上面那条
+`secret put` 里输入一次，不写进任何会进仓库的文件。本地调试的密码放在
+`worker/.dev.vars`，那个文件已被 `.gitignore` 排除。
 
 部署完会输出一个地址，形如 `https://captainx-download.<你的账号>.workers.dev`。
 把它填进网站根目录 `config.js` 的 `CAPTAINX_API_BASE`，提交推送即可——
@@ -25,20 +28,30 @@ npx wrangler deploy
 （例如 `api.akasolv.com/*`），把 `CAPTAINX_API_BASE` 换成该地址，
 再把 `wrangler.toml` 里的 `ALLOW_ORIGIN` 改成网站域名。
 
-### 可选：开启"手动换一组邀请码"
+### KV：限量、换码、登录限速都要靠它
 
 ```bash
 npx wrangler kv namespace create INVITE_KV
 ```
 
 把命令输出的 id 填进 `wrangler.toml` 里被注释掉的 `[[kv_namespaces]]`，
-去掉注释再 `npx wrangler deploy`。不做这一步其余功能一样能用，
-只是后台的「换一组」按钮会告诉你没开这个能力。登录失败限速也依赖它。
+去掉注释再 `npx wrangler deploy`。不做这一步，校验和下载照常工作，
+但每日限量、「换一组」、登录失败限速这三样都用不了，界面上会直说。
 
 ## 后台
 
-浏览器打开 `你的网站/admin.html`，用上面设的账号密码登录，
-就能看到今天起若干天的邀请码，点一下即复制。
+浏览器打开 `你的网站/admin`，用上面设的账号密码登录，
+能看到今天的下载量、每日上限，以及今天起若干天的邀请码（点一下即复制）。
+
+### 每日下载限量
+
+在「今日下载」里填一个数字保存即可，填 0 表示不限量。改完立刻生效，
+首页会显示「今日名额 N / M 份」，名额发完后显示「已发完，明天再来」，
+这时即便邀请码是对的也不再发下载票。计数每天零点（东八区）自动归零，
+也可以随时手动清零。
+
+计数是在下载真正开始时才 +1 的：拿到票却没点下载的人不占名额，
+取不到安装包（上游出错）也不扣。
 
 这一页首页上没有入口，也标了 noindex，但它终究是一个公开可访问的静态页面——
 拦得住的是服务端的账号密码，不是"别人不知道这个网址"。密码要设得足够长。
@@ -76,11 +89,13 @@ node tools/invite-code.mjs <INVITE_SALT> 7        # 未来七天
 | 接口 | 说明 |
 | --- | --- |
 | `GET /api/latest` | 最新版本号与体积，供首页展示。**不返回下载地址** |
+| `GET /api/quota` | 今日已下载数、上限、剩余，供首页展示 |
 | `POST /api/verify` | 提交 `{"code":"..."}`，通过则发一张十分钟有效的下载票 |
-| `GET /api/download?t=<票>` | 校验票据后把安装包流式转发给浏览器 |
+| `GET /api/download?t=<票>` | 校验票据后把安装包流式转发给浏览器，并把今日计数 +1 |
 | `POST /api/admin/login` | 提交 `{"user":"...","password":"..."}`，换一张八小时的登录票 |
-| `GET /api/admin/codes?days=7` | 带 `Authorization: Bearer <登录票>`，查邀请码 |
+| `GET /api/admin/codes?days=7` | 带 `Authorization: Bearer <登录票>`，查邀请码与今日额度 |
 | `POST /api/admin/rotate` | 同上，`{"date":"YYYY-MM-DD"}`，把那天的码换一组（需 KV） |
+| `POST /api/admin/quota` | 同上，`{"limit":50}` 改上限，`{"resetToday":true}` 清零（需 KV） |
 | `GET /api/today?key=<ADMIN_KEY>` | 不开浏览器时的快捷查询 |
 
 ## 自测
@@ -89,8 +104,9 @@ node tools/invite-code.mjs <INVITE_SALT> 7        # 未来七天
 node worker/test.mjs
 ```
 
-直接调用 `worker.js` 导出的 `fetch`，不用起服务。覆盖邀请码校验、下载票伪造与过期、
-后台登录与锁定、换码前后新旧码的生效与失效。
+直接调用 `worker.js` 导出的 `fetch`，不用起服务，也不联网——GitHub 和 KV 都由假的顶上。
+覆盖邀请码校验、下载票伪造与过期、后台登录与锁定、换码前后新旧码的生效与失效，
+以及限量从设置、扣减、发完拦截到清零的整条链路。
 
 ## 边界
 
@@ -101,6 +117,10 @@ node worker/test.mjs
 - 后台登录票是签名串，不能单独吊销；改 `INVITE_SALT` 会让所有票立即失效。
 - 登录失败限速按 IP 计，且只在绑了 KV 时生效。换 IP 可以绕开，
   真正的防线是密码长度。
+- 下载计数是"读出来加一再写回去"，KV 没有原子自增。两个人同一瞬间下载时
+  可能少记一次，也就是偶尔多放出一两份。要一个数都不差得换 Durable Object。
+- 同一个人可以拿同一天的码反复下载，每次各占一个名额。限的是"每天发出去多少份"，
+  不是"多少个人下过"。
 - 安装包仍然放在 GitHub 公开发布仓库里。网站上看不到那个地址，
   但知道仓库名的人依然可以直接去仓库下载——应用内自动更新也依赖它。
   要彻底封死，需要把仓库转为私有并配置 `GITHUB_TOKEN`，同时改造应用内更新。

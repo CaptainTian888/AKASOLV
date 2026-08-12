@@ -8,13 +8,15 @@
  *
  * 对外接口：
  *   GET  /api/latest              最新版本号和体积（首页展示用，不含下载地址）
+ *   GET  /api/quota               今日下载额度，首页展示用
  *   POST /api/verify  {code}      校验邀请码，通过则发一张有时效的下载票
  *   GET  /api/download?t=<票>     校验票据后把安装包流式转发给浏览器
  *
- * 后台接口（admin.html 用，需登录）：
+ * 后台接口（/admin 用，需登录）：
  *   POST /api/admin/login  {user,password}   换一张 8 小时有效的登录票
  *   GET  /api/admin/codes?days=7             查今天起若干天的邀请码
  *   POST /api/admin/rotate {date}            当天的码换一组（需要 KV，见下）
+ *   POST /api/admin/quota  {limit,resetToday} 改每日下载上限 / 把今天的计数清零
  *   GET  /api/today?key=<ADMIN_KEY>          不开浏览器时的快捷查询
  *
  * 需要配置的变量（wrangler.toml 里是普通变量，密钥用 wrangler secret put）：
@@ -26,8 +28,8 @@
  *   GITHUB_REPO     安装包所在仓库，默认 captainzeqi/Captain-Net-Releases
  *   GITHUB_TOKEN    可选。仓库私有时必填；公开时留空即可。
  *
- * 可选的 KV 绑定 INVITE_KV：只有"手动换一组邀请码"和登录失败限速用得到它。
- * 不绑定时其余功能完全正常，只是后台的"换一组"按钮会告诉你没开这个能力。
+ * 可选的 KV 绑定 INVITE_KV：手动换一组邀请码、每日下载上限、登录失败限速都要靠它。
+ * 不绑定时校验和下载完全正常，只是这三样会明确告诉你没开这个能力。
  */
 
 const DEFAULT_REPO = 'captainzeqi/Captain-Net-Releases';
@@ -51,12 +53,14 @@ export default {
     try {
       switch (url.pathname) {
         case '/api/latest':        return await handleLatest(env, cors);
+        case '/api/quota':         return await handleQuota(env, cors);
         case '/api/verify':        return await handleVerify(request, env, cors);
         case '/api/download':      return await handleDownload(url, env, cors);
         case '/api/today':         return await handleToday(url, env, cors);
         case '/api/admin/login':   return await handleAdminLogin(request, env, cors);
         case '/api/admin/codes':   return await handleAdminCodes(request, url, env, cors);
         case '/api/admin/rotate':  return await handleAdminRotate(request, env, cors);
+        case '/api/admin/quota':   return await handleAdminQuota(request, env, cors);
         default:
           return json({ error: 'not_found' }, 404, cors);
       }
@@ -154,6 +158,75 @@ function clampDays(raw) {
   return Math.min(31, Math.max(1, Number(raw || 1) || 1));
 }
 
+/* ------------------------------------------------------------------ 每日额度 */
+
+const LIMIT_KEY = 'cfg:daily-limit';
+
+/** 每日下载上限。0 表示不限量，这也是没绑 KV 时的行为。 */
+async function dailyLimit(env) {
+  if (!env.INVITE_KV) return 0;
+  const value = Number(await env.INVITE_KV.get(LIMIT_KEY));
+  return Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+}
+
+async function usedOn(env, dateKey) {
+  if (!env.INVITE_KV) return 0;
+  return Number(await env.INVITE_KV.get(`dl:${dateKey}`)) || 0;
+}
+
+/**
+ * 计数 +1。
+ *
+ * KV 没有原子自增，这里是"读出来加一再写回去"。两个人在同一瞬间下载时，
+ * 有可能都读到 8、都写回 9，于是少记一次。对"每天放出几十份"这个量级，
+ * 偏差一两次不影响判断；真要一个数都不能差，得换成 Durable Object。
+ * 宁可少记也不多记：多记会把还没送出去的名额吃掉。
+ */
+async function bumpUsed(env, dateKey) {
+  if (!env.INVITE_KV) return;
+  const next = (await usedOn(env, dateKey)) + 1;
+  // 留三天足够对账，过期的日子没人再看。
+  await env.INVITE_KV.put(`dl:${dateKey}`, String(next), { expirationTtl: 3 * 86400 });
+}
+
+async function quotaState(env) {
+  const date = todayKey(0);
+  const limit = await dailyLimit(env);
+  const used = await usedOn(env, date);
+  return {
+    date,
+    // 没绑 KV，或上限设成 0，都当作不限量
+    enabled: Boolean(env.INVITE_KV) && limit > 0,
+    limit,
+    used,
+    remaining: limit > 0 ? Math.max(0, limit - used) : null
+  };
+}
+
+async function handleQuota(env, cors) {
+  const state = await quotaState(env);
+  // 不缓存：额度就是要实时的，缓存了前台看到的数就是旧的。
+  return json(state, 200, { ...cors, 'Cache-Control': 'no-store' });
+}
+
+async function handleAdminQuota(request, env, cors) {
+  if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405, cors);
+  if (!(await requireAdmin(request, env))) return json({ error: 'unauthorized' }, 401, cors);
+  if (!env.INVITE_KV) return json({ ok: false, error: 'no_kv' }, 501, cors);
+
+  let body = {};
+  try { body = await request.json(); } catch { /* 空请求体只当作查询 */ }
+
+  if (body.limit !== undefined) {
+    const limit = Number(body.limit);
+    if (!Number.isFinite(limit) || limit < 0) return json({ ok: false, error: 'bad_limit' }, 400, cors);
+    await env.INVITE_KV.put(LIMIT_KEY, String(Math.floor(limit)));
+  }
+  if (body.resetToday) await env.INVITE_KV.put(`dl:${todayKey(0)}`, '0', { expirationTtl: 3 * 86400 });
+
+  return json({ ok: true, ...(await quotaState(env)) }, 200, cors);
+}
+
 /* ------------------------------------------------------------------ 签名票据 */
 
 async function hmac(env, payload) {
@@ -238,7 +311,8 @@ async function handleAdminCodes(request, url, env, cors) {
   const days = clampDays(url.searchParams.get('days'));
   return json({
     timezone: 'Asia/Shanghai',
-    canRotate: Boolean(env.INVITE_KV),
+    hasKv: Boolean(env.INVITE_KV),
+    quota: await quotaState(env),
     codes: await codeList(env, days)
   }, 200, cors);
 }
@@ -275,8 +349,14 @@ async function handleVerify(request, env, cors) {
   const matched = candidates.some((expected) => timingSafeEqual(normalizeCode(expected), supplied));
   if (!matched) return json({ ok: false, error: 'invalid' }, 200, cors);
 
+  // 名额用完就别发票了。这里先挡一次是为了把话说清楚——
+  // 让人拿着一张必然被拒的票去点下载，等于把错误推迟到最难解释的时候。
+  const quota = await quotaState(env);
+  if (quota.enabled && quota.remaining <= 0)
+    return json({ ok: false, error: 'quota_exhausted', ...quota }, 200, cors);
+
   const ticket = await signToken(env, 'download', Date.now() + TICKET_TTL_SECONDS * 1000);
-  return json({ ok: true, ticket, expiresIn: TICKET_TTL_SECONDS }, 200, cors);
+  return json({ ok: true, ticket, expiresIn: TICKET_TTL_SECONDS, quota }, 200, cors);
 }
 
 async function handleLatest(env, cors) {
@@ -294,6 +374,10 @@ async function handleDownload(url, env, cors) {
   if (!(await verifyToken(env, 'download', url.searchParams.get('t'))))
     return json({ error: 'expired' }, 403, cors);
 
+  // 票有十分钟有效期，期间名额可能已经被别人用完，所以这里必须再查一次。
+  const quota = await quotaState(env);
+  if (quota.enabled && quota.remaining <= 0) return json({ error: 'quota_exhausted', ...quota }, 429, cors);
+
   const release = await fetchLatestRelease(env);
   if (!release) return json({ error: 'unavailable' }, 502, cors);
 
@@ -301,6 +385,9 @@ async function handleDownload(url, env, cors) {
   // 用流式转发而不是先缓冲：安装包 150MB 上下，缓冲会直接超内存。
   const upstream = await fetch(release.downloadUrl, { headers: githubHeaders(env, true) });
   if (!upstream.ok || !upstream.body) return json({ error: 'upstream', status: upstream.status }, 502, cors);
+
+  // 计数放在确认上游可读之后：取不到安装包却扣掉一个名额，是白扣。
+  await bumpUsed(env, quota.date);
 
   const headers = new Headers(cors);
   headers.set('Content-Type', 'application/octet-stream');
