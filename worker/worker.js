@@ -6,17 +6,28 @@
  * 把校验放到这里之后，邀请码只存在于服务端，安装包也由这里代为转发，
  * 浏览器自始至终看不到 github.com。
  *
- * 三个接口：
+ * 对外接口：
  *   GET  /api/latest              最新版本号和体积（首页展示用，不含下载地址）
  *   POST /api/verify  {code}      校验邀请码，通过则发一张有时效的下载票
  *   GET  /api/download?t=<票>     校验票据后把安装包流式转发给浏览器
  *
+ * 后台接口（admin.html 用，需登录）：
+ *   POST /api/admin/login  {user,password}   换一张 8 小时有效的登录票
+ *   GET  /api/admin/codes?days=7             查今天起若干天的邀请码
+ *   POST /api/admin/rotate {date}            当天的码换一组（需要 KV，见下）
+ *   GET  /api/today?key=<ADMIN_KEY>          不开浏览器时的快捷查询
+ *
  * 需要配置的变量（wrangler.toml 里是普通变量，密钥用 wrangler secret put）：
- *   INVITE_SALT   必填，邀请码的盐。换掉它，之前发出去的码立即全部失效。
- *   ADMIN_KEY     可选，查询当天邀请码用：GET /api/today?key=<ADMIN_KEY>
- *   ALLOW_ORIGIN  允许调用的站点，例如 https://akasolv.com
- *   GITHUB_REPO   安装包所在仓库，默认 captainzeqi/Captain-Net-Releases
- *   GITHUB_TOKEN  可选。仓库私有时必填；公开时留空即可。
+ *   INVITE_SALT     必填，邀请码的盐。换掉它，之前发出去的码立即全部失效。
+ *   ADMIN_USER      后台账号，默认 admin
+ *   ADMIN_PASSWORD  后台密码，必填才能登录后台
+ *   ADMIN_KEY       可选，/api/today 的快捷查询口令
+ *   ALLOW_ORIGIN    允许调用的站点，例如 https://akasolv.com
+ *   GITHUB_REPO     安装包所在仓库，默认 captainzeqi/Captain-Net-Releases
+ *   GITHUB_TOKEN    可选。仓库私有时必填；公开时留空即可。
+ *
+ * 可选的 KV 绑定 INVITE_KV：只有"手动换一组邀请码"和登录失败限速用得到它。
+ * 不绑定时其余功能完全正常，只是后台的"换一组"按钮会告诉你没开这个能力。
  */
 
 const DEFAULT_REPO = 'captainzeqi/Captain-Net-Releases';
@@ -24,8 +35,11 @@ const DEFAULT_REPO = 'captainzeqi/Captain-Net-Releases';
 // 去掉了容易看错的 0/O、1/I/L：邀请码是要用嘴念、用手抄的。
 const ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 const CODE_LENGTH = 8;
-const TICKET_TTL_SECONDS = 600;      // 下载票 10 分钟内有效，够点一次下载
-const CACHE_SECONDS = 300;           // 版本信息缓存，避免频繁打 GitHub API
+const TICKET_TTL_SECONDS = 600;         // 下载票 10 分钟内有效，够点一次下载
+const SESSION_TTL_SECONDS = 8 * 3600;   // 后台登录票 8 小时
+const CACHE_SECONDS = 300;              // 版本信息缓存，避免频繁打 GitHub API
+const LOGIN_MAX_FAILURES = 10;          // 同一 IP 连续失败上限
+const LOGIN_LOCK_SECONDS = 900;         // 触顶后锁多久
 
 export default {
   async fetch(request, env) {
@@ -36,10 +50,13 @@ export default {
 
     try {
       switch (url.pathname) {
-        case '/api/latest':   return await handleLatest(env, cors);
-        case '/api/verify':   return await handleVerify(request, env, cors);
-        case '/api/download': return await handleDownload(url, env, cors);
-        case '/api/today':    return await handleToday(url, env, cors);
+        case '/api/latest':        return await handleLatest(env, cors);
+        case '/api/verify':        return await handleVerify(request, env, cors);
+        case '/api/download':      return await handleDownload(url, env, cors);
+        case '/api/today':         return await handleToday(url, env, cors);
+        case '/api/admin/login':   return await handleAdminLogin(request, env, cors);
+        case '/api/admin/codes':   return await handleAdminCodes(request, url, env, cors);
+        case '/api/admin/rotate':  return await handleAdminRotate(request, env, cors);
         default:
           return json({ error: 'not_found' }, 404, cors);
       }
@@ -61,12 +78,36 @@ function todayKey(offsetDays = 0) {
   return now.toISOString().slice(0, 10);   // YYYY-MM-DD
 }
 
-async function codeForDate(dateKey, salt) {
-  const raw = new TextEncoder().encode(`${dateKey}|${salt}`);
-  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', raw));
+/**
+ * 邀请码由日期、盐、以及"第几次轮换"三者算出。
+ *
+ * 为什么不是抽一串随机数存起来：那样第一个访客到达的瞬间会有并发写，
+ * 两个请求可能各自生成一组码，先发出去的那组随后被覆盖，用户手里的码就失效了。
+ * 算出来的码没有这个问题——任何时候、任何机房、并发多少次，结果都一样，
+ * 不写任何存储也能对上。对拿不到盐的人来说，它和随机抽的码没有区别。
+ *
+ * rotation 是"今天这组码作废重来"用的计数器，只有它需要落存储，
+ * 且只在你按下"换一组"时才写一次，没有并发问题。
+ */
+async function codeForDate(dateKey, salt, rotation = 0) {
+  // rotation 为 0 时保持和最初的算法一字不差，离线小工具算出来的仍然对得上。
+  const seed = rotation > 0 ? `${dateKey}|${salt}|r${rotation}` : `${dateKey}|${salt}`;
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(seed)));
   let code = '';
   for (let i = 0; i < CODE_LENGTH; i++) code += ALPHABET[digest[i] % ALPHABET.length];
   return code;
+}
+
+/** 读某天的轮换次数。没绑 KV 就恒为 0，也就是从不轮换。 */
+async function rotationOf(env, dateKey) {
+  if (!env.INVITE_KV) return 0;
+  const raw = await env.INVITE_KV.get(`rot:${dateKey}`);
+  const value = Number(raw);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+async function codeOf(env, dateKey) {
+  return codeForDate(dateKey, requireSalt(env), await rotationOf(env, dateKey));
 }
 
 /**
@@ -80,24 +121,12 @@ function normalizeCode(input) {
   return String(input || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
 }
 
-/** 邀请码比对。用固定时间比较，避免逐字符比较泄露信息。 */
-function sameCode(a, b) {
+/** 固定时间比较，避免逐字符比较泄露信息。 */
+function timingSafeEqual(a, b) {
   if (a.length !== b.length) return false;
   let diff = 0;
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
-}
-
-async function handleToday(url, env, cors) {
-  if (!env.ADMIN_KEY || url.searchParams.get('key') !== env.ADMIN_KEY)
-    return json({ error: 'forbidden' }, 403, cors);
-  const days = Math.min(31, Math.max(1, Number(url.searchParams.get('days') || 1)));
-  const list = [];
-  for (let i = 0; i < days; i++) {
-    const date = todayKey(i);
-    list.push({ date, code: await codeForDate(date, requireSalt(env)) });
-  }
-  return json({ timezone: 'Asia/Shanghai', codes: list }, 200, cors);
 }
 
 function requireSalt(env) {
@@ -105,30 +134,128 @@ function requireSalt(env) {
   return env.INVITE_SALT;
 }
 
-/* ------------------------------------------------------------------ 下载票 */
+async function codeList(env, days) {
+  const list = [];
+  for (let i = 0; i < days; i++) {
+    const date = todayKey(i);
+    list.push({ date, code: await codeOf(env, date), rotation: await rotationOf(env, date) });
+  }
+  return list;
+}
 
-async function signTicket(env, expiresAt) {
-  const payload = `${expiresAt}`;
+async function handleToday(url, env, cors) {
+  if (!env.ADMIN_KEY || url.searchParams.get('key') !== env.ADMIN_KEY)
+    return json({ error: 'forbidden' }, 403, cors);
+  const days = clampDays(url.searchParams.get('days'));
+  return json({ timezone: 'Asia/Shanghai', codes: await codeList(env, days) }, 200, cors);
+}
+
+function clampDays(raw) {
+  return Math.min(31, Math.max(1, Number(raw || 1) || 1));
+}
+
+/* ------------------------------------------------------------------ 签名票据 */
+
+async function hmac(env, payload) {
   const key = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(requireSalt(env)),
     { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload)));
-  return `${expiresAt}.${base64url(mac)}`;
+  return base64url(mac);
 }
 
-async function verifyTicket(env, ticket) {
-  const parts = String(ticket || '').split('.');
+/** 下载票和登录票用同一套签名，靠前缀区分，避免一种票被当另一种用。 */
+async function signToken(env, kind, expiresAt) {
+  return `${expiresAt}.${await hmac(env, `${kind}|${expiresAt}`)}`;
+}
+
+async function verifyToken(env, kind, token) {
+  const parts = String(token || '').split('.');
   if (parts.length !== 2) return false;
   const expiresAt = Number(parts[0]);
   if (!Number.isFinite(expiresAt) || Date.now() > expiresAt) return false;
-  const expected = await signTicket(env, expiresAt);
-  return sameCode(expected, `${expiresAt}.${parts[1]}`);
+  return timingSafeEqual(await signToken(env, kind, expiresAt), `${expiresAt}.${parts[1]}`);
 }
 
 function base64url(bytes) {
   let binary = '';
   for (const b of bytes) binary += String.fromCharCode(b);
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/* ------------------------------------------------------------------ 后台 */
+
+function clientIp(request) {
+  return request.headers.get('CF-Connecting-IP') || 'unknown';
+}
+
+async function loginFailures(env, ip) {
+  if (!env.INVITE_KV) return 0;
+  return Number(await env.INVITE_KV.get(`fail:${ip}`)) || 0;
+}
+
+async function noteLoginFailure(env, ip) {
+  if (!env.INVITE_KV) return;
+  const next = (await loginFailures(env, ip)) + 1;
+  await env.INVITE_KV.put(`fail:${ip}`, String(next), { expirationTtl: LOGIN_LOCK_SECONDS });
+}
+
+async function handleAdminLogin(request, env, cors) {
+  if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405, cors);
+  if (!env.ADMIN_PASSWORD) return json({ ok: false, error: 'not_configured' }, 503, cors);
+
+  const ip = clientIp(request);
+  if (await loginFailures(env, ip) >= LOGIN_MAX_FAILURES)
+    return json({ ok: false, error: 'locked', retryAfter: LOGIN_LOCK_SECONDS }, 429, cors);
+
+  let body = {};
+  try { body = await request.json(); } catch { /* 空请求体按空账号处理 */ }
+
+  const user = String(body.user || '').trim();
+  const password = String(body.password || '');
+  const expectedUser = env.ADMIN_USER || 'admin';
+
+  // 账号错和密码错返回同一个结果：分开提示等于告诉对方账号猜对了。
+  const ok = timingSafeEqual(user, expectedUser) && timingSafeEqual(password, env.ADMIN_PASSWORD);
+  if (!ok) {
+    await noteLoginFailure(env, ip);
+    return json({ ok: false, error: 'bad_credentials' }, 401, cors);
+  }
+
+  if (env.INVITE_KV) await env.INVITE_KV.delete(`fail:${ip}`);
+  const token = await signToken(env, 'admin', Date.now() + SESSION_TTL_SECONDS * 1000);
+  return json({ ok: true, token, expiresIn: SESSION_TTL_SECONDS }, 200, cors);
+}
+
+async function requireAdmin(request, env) {
+  const header = request.headers.get('Authorization') || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+  return verifyToken(env, 'admin', token);
+}
+
+async function handleAdminCodes(request, url, env, cors) {
+  if (!(await requireAdmin(request, env))) return json({ error: 'unauthorized' }, 401, cors);
+  const days = clampDays(url.searchParams.get('days'));
+  return json({
+    timezone: 'Asia/Shanghai',
+    canRotate: Boolean(env.INVITE_KV),
+    codes: await codeList(env, days)
+  }, 200, cors);
+}
+
+async function handleAdminRotate(request, env, cors) {
+  if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405, cors);
+  if (!(await requireAdmin(request, env))) return json({ error: 'unauthorized' }, 401, cors);
+  if (!env.INVITE_KV) return json({ ok: false, error: 'no_kv' }, 501, cors);
+
+  let body = {};
+  try { body = await request.json(); } catch { /* 不带日期就当今天 */ }
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(body.date || '') ? body.date : todayKey(0);
+
+  const next = (await rotationOf(env, date)) + 1;
+  // 保留到该日期之后一段时间即可：过期的码本来就不再接受，留着没意义。
+  await env.INVITE_KV.put(`rot:${date}`, String(next), { expirationTtl: 45 * 86400 });
+  return json({ ok: true, date, rotation: next, code: await codeForDate(date, requireSalt(env), next) }, 200, cors);
 }
 
 /* ------------------------------------------------------------------ 接口 */
@@ -139,20 +266,16 @@ async function handleVerify(request, env, cors) {
   let body = {};
   try { body = await request.json(); } catch { /* 空请求体按空码处理 */ }
 
-  const salt = requireSalt(env);
   const supplied = normalizeCode(body.code);
   if (!supplied) return json({ ok: false, error: 'empty' }, 400, cors);
 
   // 也接受昨天的码：用户可能在临近零点时拿到码、过一会儿才来下载，
   // 为这几分钟让他重新找人要一次并不合理。
-  const candidates = await Promise.all([
-    codeForDate(todayKey(0), salt),
-    codeForDate(todayKey(-1), salt)
-  ]);
-  const matched = candidates.some((expected) => sameCode(normalizeCode(expected), supplied));
+  const candidates = [await codeOf(env, todayKey(0)), await codeOf(env, todayKey(-1))];
+  const matched = candidates.some((expected) => timingSafeEqual(normalizeCode(expected), supplied));
   if (!matched) return json({ ok: false, error: 'invalid' }, 200, cors);
 
-  const ticket = await signTicket(env, Date.now() + TICKET_TTL_SECONDS * 1000);
+  const ticket = await signToken(env, 'download', Date.now() + TICKET_TTL_SECONDS * 1000);
   return json({ ok: true, ticket, expiresIn: TICKET_TTL_SECONDS }, 200, cors);
 }
 
@@ -168,7 +291,7 @@ async function handleLatest(env, cors) {
 }
 
 async function handleDownload(url, env, cors) {
-  if (!(await verifyTicket(env, url.searchParams.get('t'))))
+  if (!(await verifyToken(env, 'download', url.searchParams.get('t'))))
     return json({ error: 'expired' }, 403, cors);
 
   const release = await fetchLatestRelease(env);
@@ -230,7 +353,7 @@ function corsHeaders(env) {
   return {
     'Access-Control-Allow-Origin': env.ALLOW_ORIGIN || '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
   };
 }
 

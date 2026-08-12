@@ -1,9 +1,8 @@
 (() => {
   'use strict';
 
-  // 校验服务地址。部署 worker/ 目录后把这里换成 wrangler 输出的地址。
-  // 留空时下载按钮会明确告知"下载通道尚未开启"，而不是悄悄失败。
-  const API_BASE = '';
+  // 地址配在 config.js 里，首页和后台页共用一处。
+  const API_BASE = window.CAPTAINX_API_BASE || '';
 
   const downloadButtons = () => document.querySelectorAll('[data-download]');
 

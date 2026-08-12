@@ -7,8 +7,18 @@ compatibility_date = "2024-11-01"
 ALLOW_ORIGIN = "*"
 # 安装包所在仓库。仓库转为私有时，另外配置 GITHUB_TOKEN 这个密钥。
 GITHUB_REPO = "captainzeqi/Captain-Net-Releases"
+# 后台账号。密码是密钥，不写在这里。
+ADMIN_USER = "admin"
 
-# INVITE_SALT / ADMIN_KEY / GITHUB_TOKEN 属于密钥，不写在这个文件里，
-# 用命令单独设置：
+# INVITE_SALT / ADMIN_PASSWORD / ADMIN_KEY / GITHUB_TOKEN 属于密钥，
+# 不写在这个文件里（它会进 git），用命令单独设置：
 #   npx wrangler secret put INVITE_SALT
+#   npx wrangler secret put ADMIN_PASSWORD
 #   npx wrangler secret put ADMIN_KEY
+
+# 想要"手动换一组邀请码"和登录失败限速，就建一个 KV 再把下面三行的注释去掉：
+#   npx wrangler kv namespace create INVITE_KV
+# 命令会输出一个 id，填到 id = 后面。不做这一步其余功能一样能用。
+# [[kv_namespaces]]
+# binding = "INVITE_KV"
+# id = "把 wrangler 输出的 id 填在这里"

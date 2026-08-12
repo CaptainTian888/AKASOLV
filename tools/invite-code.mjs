@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 // 离线算出每日邀请码，规则和 Worker 完全一致。
 //   node tools/invite-code.mjs <INVITE_SALT> [天数]
+//
+// 注意：如果在后台对某一天点过「换一组」，那天的码就不再是这里算出来的了
+// （轮换次数存在服务端）。以后台页面显示的为准。
 import { createHash } from 'node:crypto';
 
 const ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';

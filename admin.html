@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08121f">
+  <!-- 这页不该出现在搜索结果里 -->
+  <meta name="robots" content="noindex, nofollow">
+  <title>邀请码后台 · Captain X</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <header class="admin-head">
+      <img src="assets/icon-180.png" width="36" height="36" alt="">
+      <div>
+        <h1>邀请码后台</h1>
+        <p class="admin-sub">Captain X 下载邀请码</p>
+      </div>
+    </header>
+
+    <!-- 登录 -->
+    <section class="admin-panel" data-view="login">
+      <form class="admin-form" autocomplete="off">
+        <label>
+          <span>账号</span>
+          <input class="admin-user" type="text" name="username" autocomplete="username" required>
+        </label>
+        <label>
+          <span>密码</span>
+          <input class="admin-pass" type="password" name="password" autocomplete="current-password" required>
+        </label>
+        <button class="admin-button admin-login" type="submit">登录</button>
+        <p class="admin-status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <!-- 邀请码 -->
+    <section class="admin-panel" data-view="codes" hidden>
+      <div class="admin-toolbar">
+        <label class="admin-days">
+          往后看
+          <select class="admin-range">
+            <option value="1">今天</option>
+            <option value="7" selected>7 天</option>
+            <option value="14">14 天</option>
+            <option value="31">31 天</option>
+          </select>
+        </label>
+        <button class="admin-button admin-ghost admin-refresh" type="button">刷新</button>
+        <button class="admin-button admin-ghost admin-logout" type="button">退出登录</button>
+      </div>
+
+      <ul class="code-list"></ul>
+      <p class="admin-status admin-codes-status" role="status" aria-live="polite"></p>
+      <p class="admin-note">
+        邀请码每天 0 点（东八区）自动更换，无需人工维护。昨天的码仍然可用，
+        方便临近零点拿到码的人。把码泄露出去时，点当天那一行的「换一组」立刻作废重发。
+      </p>
+    </section>
+  </main>
+
+  <script src="config.js" defer></script>
+  <script src="admin.js" defer></script>
+</body>
+</html>
