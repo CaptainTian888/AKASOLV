@@ -16,9 +16,9 @@ ADMIN_USER = "Captain"
 #   npx wrangler secret put ADMIN_PASSWORD
 #   npx wrangler secret put ADMIN_KEY
 
-# 想要"手动换一组邀请码"和登录失败限速，就建一个 KV 再把下面三行的注释去掉：
-#   npx wrangler kv namespace create INVITE_KV
-# 命令会输出一个 id，填到 id = 后面。不做这一步其余功能一样能用。
-# [[kv_namespaces]]
-# binding = "INVITE_KV"
-# id = "把 wrangler 输出的 id 填在这里"
+# 每日下载上限、手动换一组邀请码、登录失败限速，都存在这个 KV 里。
+# binding 必须是 INVITE_KV（代码里读的是 env.INVITE_KV）；
+# 命名空间在控制台里叫什么名字都行，这里只认下面这个 id。
+[[kv_namespaces]]
+binding = "INVITE_KV"
+id = "e2eaf87533544281931a8e288f957e01"
